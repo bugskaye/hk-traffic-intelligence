@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { PREFERENCE_DEFAULTS, allLayers, allLayersOn, beginOnly, chooseWatchedLayer, layerNamesOpen, readPreferences, soleLayer, soloLayers } from "./preferences.ts"
+import { PREFERENCE_DEFAULTS, allLayers, allLayersOn, beginOnly, chooseWatchedLayer, intelCardOpen, layerNamesOpen, readPreferences, soleLayer, soloLayers } from "./preferences.ts"
 
 const saved = readPreferences(JSON.stringify({
   locale: "en",
@@ -19,6 +19,7 @@ assert.equal(saved.layers.charger, false)
 assert.equal(PREFERENCE_DEFAULTS.layers.charger, false)
 assert.equal(saved.basemap, "street")
 assert.equal(saved.intelOpen, false)
+assert.equal(saved.intelChosen, false)
 assert.equal(saved.intelTab, "boundary")
 assert.equal(saved.barOpen, false)
 assert.equal(saved.pinnedOrigin, "H12")
@@ -68,6 +69,17 @@ const plain = chooseWatchedLayer(false, onlyParking, "kmb")
 assert.equal(plain.only, false)
 assert.equal(plain.layers.parking, true)
 assert.equal(plain.layers.kmb, true)
+
+assert.equal(readPreferences(JSON.stringify({ intelOpen: true })).intelOpen, null)
+assert.equal(readPreferences(JSON.stringify({ intelOpen: true, intelChosen: true })).intelOpen, true)
+assert.equal(readPreferences(JSON.stringify({ intelOpen: false, intelChosen: true })).intelOpen, false)
+assert.equal(readPreferences("{}").intelOpen, null)
+assert.equal(PREFERENCE_DEFAULTS.intelOpen, null)
+assert.equal(intelCardOpen(true, null), false)
+assert.equal(intelCardOpen(false, null), true)
+assert.equal(intelCardOpen(true, true), true)
+assert.equal(intelCardOpen(true, false), false)
+assert.equal(intelCardOpen(false, false), false)
 
 assert.equal(layerNamesOpen(true, null), false)
 assert.equal(layerNamesOpen(false, null), true)

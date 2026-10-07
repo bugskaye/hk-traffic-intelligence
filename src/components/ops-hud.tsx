@@ -9,7 +9,7 @@ import { displayText, formatClock, LOCALE_MARK, LOCALES, type Messages } from "@
 import { CHANGELOG, changelogText } from "@/lib/changelog"
 import type { BoardFault } from "@/lib/board-status"
 import { firstOpenBoundary, INTEL_TABS, intelBoard, type IntelItem, type IntelTab } from "@/lib/intel"
-import { preferenceServerSnapshot, preferenceSnapshot, subscribePreferences, updatePreference } from "@/lib/preferences"
+import { INTEL_PHONE_QUERY, preferenceServerSnapshot, preferenceSnapshot, subscribePreferences, updatePreference } from "@/lib/preferences"
 import { formatSpeed } from "@/lib/speed"
 import type { ApproachPoint, ApproachesResponse, HarbourJourney, TrafficResponse, WeatherConditions, WeatherWarning } from "@/lib/types"
 import { weatherBar } from "@/lib/warnings"
@@ -41,6 +41,7 @@ type OpsHudProps = {
   ferryError: string | null
   boardFaults: readonly BoardFault[]
   open: boolean
+  choice: boolean | null
   onOpenChange: (open: boolean) => void
   onFocus: (focus: { id: string; coordinates: [number, number] }) => void
   view: { lng: number; lat: number; zoom: number } | null
@@ -139,7 +140,7 @@ export function OpsHud(props: OpsHudProps) {
   useEffect(() => {
     const root = document.documentElement
     const apply = () => {
-      const narrow = window.matchMedia("(max-width: 639px)").matches
+      const narrow = window.matchMedia(INTEL_PHONE_QUERY).matches
       const attrib = document.querySelector<HTMLElement>(".maplibregl-ctrl-attrib")
       const attribBox = attrib?.getBoundingClientRect()
       if (narrow && !open && attribBox && attribBox.height > 2) {
@@ -403,72 +404,69 @@ export function OpsHud(props: OpsHudProps) {
       <section
         id="harbour-intel"
         data-map-chrome="panel"
+        data-intel-open={props.choice === null ? undefined : props.choice ? "true" : "false"}
         className={
           open
             ? "pointer-events-auto absolute right-3 bottom-[var(--intel-bottom,6rem)] z-[6] w-[min(22rem,calc(100%-1.5rem))] border border-cyan-200/30 bg-[#041018]/88 shadow-[0_0_24px_rgba(34,211,238,0.08)] backdrop-blur-md sm:bottom-36 lg:right-4 lg:bottom-14"
             : "pointer-events-auto absolute inset-x-0 bottom-[var(--marquee-bottom,3.5rem)] z-[6] border-t border-cyan-200/30 bg-[#041018]/88 shadow-[0_0_24px_rgba(34,211,238,0.08)] backdrop-blur-md sm:bottom-14"
         }
       >
-        <div className="flex items-center gap-1 px-1.5 py-1">
-          {open ? (
-            <>
-              <div role="tablist" aria-label={m.intel} className="flex min-w-0 flex-1 flex-wrap gap-0.5">
-                {INTEL_TABS.map((id, index) => {
-                  const selected = tab === id
-                  const urgent = board[id].some((row) => row.urgent)
-                  return (
-                    <button
-                      key={id}
-                      id={`intel-tab-${id}`}
-                      type="button"
-                      role="tab"
-                      aria-selected={selected}
-                      aria-controls="harbour-intel-list"
-                      tabIndex={selected ? 0 : -1}
-                      onClick={() => setTab(id)}
-                      onKeyDown={(event) => onTabKey(event, index, setTab)}
-                      className={`inline-flex shrink-0 items-center gap-1 px-1.5 py-1 font-[family-name:var(--font-hud)] text-[0.62rem] tracking-[0.08em] uppercase ${
-                        selected ? "border-b-2 border-cyan-200 text-white" : "border-b-2 border-transparent text-cyan-100/70"
-                      }`}
-                    >
-                      {tabLabel(id, m)}
-                      {urgent ? <span className="size-1 rounded-full bg-[#FF5D73]" /> : null}
-                    </button>
-                  )
-                })}
-              </div>
-              <button
-                type="button"
-                aria-expanded={open}
-                aria-controls="harbour-intel-list"
-                onClick={() => changeOpen(false)}
-                className="ml-auto shrink-0 border border-white/15 px-2 py-1 font-[family-name:var(--font-hud)] text-[0.65rem] tracking-[0.12em] text-cyan-50 uppercase"
-              >
-                {m.hide}
-              </button>
-            </>
-          ) : (
-            <>
-              <span className="shrink-0 font-[family-name:var(--font-hud)] text-[0.62rem] tracking-[0.14em] text-cyan-100/70 uppercase">
-                {tabLabel("ranked", m)}
-              </span>
-              <IntelMarquee items={ranked} empty={emptyCopy("ranked", m)} seconds={marqueeSeconds} onFocus={props.onFocus} />
-              {urgentCount > 0 ? (
-                <span className="shrink-0 font-[family-name:var(--font-hud)] text-[0.65rem] tracking-[0.12em] text-[#FF5D73] uppercase">{urgentCount}</span>
-              ) : null}
-              <button
-                type="button"
-                aria-expanded={open}
-                aria-controls="harbour-intel-list"
-                onClick={() => changeOpen(true)}
-                className="ml-1 shrink-0 border border-white/15 px-2 py-1 font-[family-name:var(--font-hud)] text-[0.65rem] tracking-[0.12em] text-cyan-50 uppercase"
-              >
-                {m.intel}
-              </button>
-            </>
-          )}
+        <div className="intel-strip items-center gap-1 px-1.5 py-1">
+          <span className="shrink-0 font-[family-name:var(--font-hud)] text-[0.62rem] tracking-[0.14em] text-cyan-100/70 uppercase">
+            {tabLabel("ranked", m)}
+          </span>
+          <IntelMarquee items={ranked} empty={emptyCopy("ranked", m)} seconds={marqueeSeconds} onFocus={props.onFocus} />
+          {urgentCount > 0 ? (
+            <span className="shrink-0 font-[family-name:var(--font-hud)] text-[0.65rem] tracking-[0.12em] text-[#FF5D73] uppercase">{urgentCount}</span>
+          ) : null}
+          <button
+            type="button"
+            aria-expanded={props.choice === true}
+            aria-controls="harbour-intel-list"
+            onClick={() => changeOpen(true)}
+            className="ml-1 shrink-0 border border-white/15 px-2 py-1 font-[family-name:var(--font-hud)] text-[0.65rem] tracking-[0.12em] text-cyan-50 uppercase"
+          >
+            {m.intel}
+          </button>
         </div>
         {open ? (
+        <div className="intel-panel">
+          <div className="flex items-center gap-1 px-1.5 py-1">
+            <div role="tablist" aria-label={m.intel} className="flex min-w-0 flex-1 flex-wrap gap-0.5">
+              {INTEL_TABS.map((id, index) => {
+                const selected = tab === id
+                const urgent = board[id].some((row) => row.urgent)
+                return (
+                  <button
+                    key={id}
+                    id={`intel-tab-${id}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    aria-controls="harbour-intel-list"
+                    tabIndex={selected ? 0 : -1}
+                    onClick={() => setTab(id)}
+                    onKeyDown={(event) => onTabKey(event, index, setTab)}
+                    className={`inline-flex shrink-0 items-center gap-1 px-1.5 py-1 font-[family-name:var(--font-hud)] text-[0.62rem] tracking-[0.08em] uppercase ${
+                      selected ? "border-b-2 border-cyan-200 text-white" : "border-b-2 border-transparent text-cyan-100/70"
+                    }`}
+                  >
+                    {tabLabel(id, m)}
+                    {urgent ? <span className="size-1 rounded-full bg-[#FF5D73]" /> : null}
+                  </button>
+                )
+              })}
+            </div>
+            <button
+              type="button"
+              aria-expanded={open}
+              aria-controls="harbour-intel-list"
+              onClick={() => changeOpen(false)}
+              className="ml-auto shrink-0 border border-white/15 px-2 py-1 font-[family-name:var(--font-hud)] text-[0.65rem] tracking-[0.12em] text-cyan-50 uppercase"
+            >
+              {m.hide}
+            </button>
+          </div>
           <div
             id="harbour-intel-list"
             role="tabpanel"
@@ -489,6 +487,7 @@ export function OpsHud(props: OpsHudProps) {
               </ol>
             )}
           </div>
+        </div>
         ) : null}
       </section>
     </div>

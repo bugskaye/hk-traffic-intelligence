@@ -34,7 +34,8 @@ export type Preferences = {
   layers: WatchLayers
   basemap: Basemap
   ground: Exclude<Basemap, "buildings">
-  intelOpen: boolean
+  intelOpen: boolean | null
+  intelChosen: boolean
   intelTab: IntelTabPreference
   barOpen: boolean
   pinnedOrigin: string | null
@@ -65,7 +66,8 @@ export const PREFERENCE_DEFAULTS: Preferences = {
   },
   basemap: "satellite",
   ground: "satellite",
-  intelOpen: true,
+  intelOpen: null,
+  intelChosen: false,
   intelTab: "ranked",
   barOpen: true,
   pinnedOrigin: null,
@@ -97,7 +99,8 @@ export function readPreferences(raw: string | null, fallback: Preferences = PREF
     layers: readLayers(row.layers, fallback.layers),
     basemap: isBasemap(row.basemap) ? row.basemap : fallback.basemap,
     ground,
-    intelOpen: typeof row.intelOpen === "boolean" ? row.intelOpen : fallback.intelOpen,
+    intelOpen: readIntelOpen(row, fallback.intelOpen),
+    intelChosen: row.intelChosen === true,
     intelTab: isTab(row.intelTab) ? row.intelTab : fallback.intelTab,
     barOpen: typeof row.barOpen === "boolean" ? row.barOpen : fallback.barOpen,
     pinnedOrigin: row.pinnedOrigin === null ? null : typeof row.pinnedOrigin === "string" && row.pinnedOrigin ? row.pinnedOrigin : fallback.pinnedOrigin,
@@ -175,6 +178,13 @@ export function beginOnly(layers: WatchLayers): WatchLayers {
   return next
 }
 
+export const INTEL_PHONE_QUERY = "(max-width: 639px)"
+
+export function intelCardOpen(phone: boolean, choice: boolean | null): boolean {
+  if (choice !== null) return choice
+  return !phone
+}
+
 export function layerNamesOpen(narrow: boolean, choice: boolean | null): boolean {
   if (choice !== null) return choice
   return !narrow
@@ -208,6 +218,13 @@ function readLayers(value: unknown, fallback: WatchLayers): WatchLayers {
 
 function isBasemap(value: unknown): value is Basemap {
   return value === "satellite" || value === "street" || value === "buildings"
+}
+
+function readIntelOpen(row: Record<string, unknown>, fallback: boolean | null): boolean | null {
+  if (row.intelChosen === true && typeof row.intelOpen === "boolean") return row.intelOpen
+  if (row.intelOpen === false) return false
+  if (row.intelOpen === true || row.intelOpen === null) return null
+  return fallback
 }
 
 function isTab(value: unknown): value is IntelTabPreference {

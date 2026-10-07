@@ -18,7 +18,7 @@ import { inLantau } from "@/lib/lantau"
 import { PICTURE_POLL_MS } from "@/lib/picture"
 import { boardFaultSnapshot, subscribeBoardFaults } from "@/lib/board-status"
 import { catalogueBoards } from "@/lib/place-arrivals"
-import { preferenceServerSnapshot, preferenceSnapshot, soleLayer, subscribePreferences, updatePreference } from "@/lib/preferences"
+import { INTEL_PHONE_QUERY, intelCardOpen, preferenceServerSnapshot, preferenceSnapshot, soleLayer, subscribePreferences, updatePreference } from "@/lib/preferences"
 import { hkoLang } from "@/lib/i18n"
 import type {
   ApproachesResponse,
@@ -50,6 +50,7 @@ export function Dashboard() {
   const forceDown = search.get("feed") === "down"
   const mapDown = search.get("map") === "down"
   const prefs = useSyncExternalStore(subscribePreferences, preferenceSnapshot, preferenceServerSnapshot)
+  const phone = useSyncExternalStore(subscribeIntelPhone, intelPhoneNow, () => false)
   const [flyToken, setFlyToken] = useState(0)
   const [mapLive, setMapLive] = useState(!mapDown)
   const layers = prefs.layers
@@ -143,7 +144,8 @@ export function Dashboard() {
   const trafficError = trafficLive.error ?? (traffic && !traffic.ok ? traffic.error ?? "Speed feed failed" : null)
   const pictureError = pictureLive.error ?? picture?.error ?? (picture && !picture.ok ? "Picture failed" : null)
   const [focus, setFocus] = useState<{ id: string; coordinates: [number, number] } | null>(null)
-  const intelOpen = prefs.intelOpen
+  const intelChoice = prefs.intelOpen
+  const intelOpen = intelCardOpen(phone, intelChoice)
   const boardFaults = useSyncExternalStore(subscribeBoardFaults, boardFaultSnapshot, boardFaultSnapshot)
 
   const corridors = traffic?.ok ? traffic.corridors : []
@@ -217,7 +219,8 @@ export function Dashboard() {
         ferryError={liveError(ferryLive.error, ferryLive.data, "Ferry arrivals failed")}
         boardFaults={boardFaults}
         open={intelOpen}
-        onOpenChange={(open) => updatePreference({ intelOpen: open })}
+        choice={intelChoice}
+        onOpenChange={(open) => updatePreference({ intelOpen: open, intelChosen: true })}
         onFocus={setFocus}
         view={view}
       />
@@ -290,4 +293,14 @@ export function Dashboard() {
       />
     </main>
   )
+}
+
+function subscribeIntelPhone(onChange: () => void) {
+  const query = window.matchMedia(INTEL_PHONE_QUERY)
+  query.addEventListener("change", onChange)
+  return () => query.removeEventListener("change", onChange)
+}
+
+function intelPhoneNow(): boolean {
+  return window.matchMedia(INTEL_PHONE_QUERY).matches
 }

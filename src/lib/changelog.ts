@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-07-phone-intel",
+    date: "2026-10-07",
+    kind: "improved",
+    en: "A phone starts with the intel card on one line. Opening or hiding it stays for the next visit.",
+    tc: "手機一打開，情報先收成一行。之後打開或收起，下次會保持。",
+    sc: "手机一打开，情报先收成一行。之后打开或收起，下次会保持。",
+  },
+  {
     id: "2026-10-07-layer-collapse",
     date: "2026-10-07",
     kind: "added",

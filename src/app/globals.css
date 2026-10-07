@@ -159,6 +159,36 @@
   view-transition-name: harbour-intel;
 }
 
+.intel-strip {
+  display: none;
+}
+
+#harbour-intel[data-intel-open="false"] .intel-strip {
+  display: flex;
+}
+
+#harbour-intel[data-intel-open="false"] .intel-panel {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  #harbour-intel:not([data-intel-open="true"]) {
+    left: 0;
+    right: 0;
+    width: auto;
+    bottom: var(--marquee-bottom, 3.5rem);
+    border-width: 1px 0 0;
+  }
+
+  #harbour-intel:not([data-intel-open="true"]) .intel-strip {
+    display: flex;
+  }
+
+  #harbour-intel:not([data-intel-open="true"]) .intel-panel {
+    display: none;
+  }
+}
+
 .maplibregl-map .maplibregl-ctrl-top-left {
   top: var(--map-control-top, 0px);
 }
