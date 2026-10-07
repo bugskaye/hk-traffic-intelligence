@@ -70,7 +70,7 @@ async function catalogue(): Promise<ParkingPark[] | null> {
 
 async function readJson(url: string, ttlMs: number): Promise<unknown | null> {
   try {
-    const response = await fetchUpstream(url, ttlMs, { timeoutMs: 8_000 })
+    const response = await fetchUpstream(url, ttlMs, { timeoutMs: 25_000 })
     if (response.status !== 200) return null
     const text = new TextDecoder().decode(response.body).replace(/^\uFEFF/, "")
     return JSON.parse(text) as unknown

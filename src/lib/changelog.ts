@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-07-place-first-reading",
+    date: "2026-10-07",
+    kind: "fixed",
+    en: "Car parks and motorcycle parks appear the first time that layer is turned on.",
+    tc: "第一次打開停車場或電單車圖層時，車位會出現。",
+    sc: "第一次打开停车场或电单车图层时，车位会出现。",
+  },
+  {
     id: "2026-10-07-speed-reading-race",
     date: "2026-10-07",
     kind: "fixed",
