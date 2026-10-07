@@ -2,7 +2,7 @@ import { parseCsv } from "@/lib/csv"
 import { fetchUpstream } from "@/lib/upstream"
 import { buildCorridors, laneSpeed, type DetectorSite } from "@/lib/corridors"
 import { fetchText } from "@/lib/fetch-text"
-import { speedReadingTtl } from "@/lib/speed"
+import { speedReadingComplete, speedReadingTtl } from "@/lib/speed"
 import {
   corridorsFromSegments,
   lamppostCorridors,
@@ -185,8 +185,12 @@ async function loadTraffic(): Promise<{ body: TrafficResponse; complete: boolean
     segments: segmentSummary,
     network: networkStatusFrom(network, Boolean(drawn)),
   }
-  const complete =
-    lampposts.status === "fulfilled" && lamppostSpeeds.status === "fulfilled" && saturation.status === "fulfilled"
+  const complete = speedReadingComplete(
+    drawn != null,
+    lampposts.status === "fulfilled",
+    lamppostSpeeds.status === "fulfilled",
+    saturation.status === "fulfilled",
+  )
   return { body, complete }
 }
 
