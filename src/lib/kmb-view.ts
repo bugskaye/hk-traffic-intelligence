@@ -9,9 +9,10 @@ export const KMB_POLL_MS = 60_000
 export const PLACE_POLL_MS = 12 * 60 * 60 * 1000
 
 const AVAILABILITY_LAYERS = new Set<WatchLayer>(["cameras", "parking", "motorcycle", "meter", "charger"])
+const DOT_LAYERS = new Set<WatchLayer>(["parking", "motorcycle"])
 
 export function placePinZoom(layer: WatchLayer, sole: WatchLayer | null): number {
-  if (sole === layer) return SOLO_PIN_ZOOM
+  if (sole === layer || DOT_LAYERS.has(layer)) return SOLO_PIN_ZOOM
   if (AVAILABILITY_LAYERS.has(layer)) return AVAILABILITY_MIN_ZOOM
   return KMB_MIN_ZOOM
 }

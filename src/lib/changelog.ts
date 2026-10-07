@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-07-park-dots",
+    date: "2026-10-07",
+    kind: "fixed",
+    en: "Car parks and motorcycle parks show together as dots when the map is zoomed out. The counts stay on the closer view.",
+    tc: "地圖縮小時，停車場和電單車泊位一起以點顯示。空位數字留在較近的畫面。",
+    sc: "地图缩小时，停车场和电单车泊位一起以点显示。空位数字留在较近的画面。",
+  },
+  {
     id: "2026-10-07-place-first-reading",
     date: "2026-10-07",
     kind: "fixed",
