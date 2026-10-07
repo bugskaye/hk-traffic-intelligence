@@ -44,7 +44,7 @@ import {
   workPopup,
 } from "@/components/map-cards"
 import { directedRouteMarks, stopPlate, stopPlateKey, type StopPlate } from "@/lib/stop-plate"
-import { AVAILABILITY_MIN_ZOOM, GMB_MIN_ZOOM, SOLO_PIN_ZOOM, mapViewKey, placePinZoom } from "@/lib/kmb-view"
+import { AVAILABILITY_MIN_ZOOM, SOLO_PIN_ZOOM, mapViewKey, placePinZoom } from "@/lib/kmb-view"
 import { meterColorStops, meterInk, meterPin, meterPlateCount, type MeterPole } from "@/lib/meter-poles"
 import { chargersInsideParks, type ChargerPlace } from "@/lib/ev-chargers"
 import { soleLayer } from "@/lib/preferences"
@@ -1811,7 +1811,7 @@ function addWatchLayers(map: Map, before: string | undefined) {
       "circle-pitch-alignment": "map",
     },
   }, before)
-  addStopLabel(map, "gmb-stop-label", "gmb-stops", before, GMB_MIN_ZOOM, false)
+  addStopLabel(map, "gmb-stop-label", "gmb-stops", before, LABEL_MIN_ZOOM, false)
   addOverlay(map, {
     id: "nlb-stops",
     type: "circle",

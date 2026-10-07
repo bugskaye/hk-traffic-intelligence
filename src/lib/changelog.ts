@@ -16,9 +16,9 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     id: "2026-10-07-minibus-names",
     date: "2026-10-07",
     kind: "fixed",
-    en: "Green minibus stops are named from the same zoom as the other bus stops.",
-    tc: "綠色專線小巴車站與其他巴士同時顯示站名。",
-    sc: "绿色专线小巴车站与其他巴士同时显示站名。",
+    en: "Green minibus stops appear with the other bus stops. Names start at the same zoom.",
+    tc: "綠色專線小巴車站與其他巴士同時出現，站名也在同一縮放出現。",
+    sc: "绿色专线小巴车站与其他巴士同时出现，站名也在同一缩放出现。",
   },
   {
     id: "2026-10-07-terminus-trains",

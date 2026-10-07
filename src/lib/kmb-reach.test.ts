@@ -1,16 +1,16 @@
 import assert from "node:assert/strict"
-import { AVAILABILITY_MIN_ZOOM, GMB_MIN_ZOOM, KMB_MIN_ZOOM, SOLO_PIN_ZOOM, mapViewKey, placePinZoom } from "./kmb-view.ts"
+import { AVAILABILITY_MIN_ZOOM, KMB_MIN_ZOOM, SOLO_PIN_ZOOM, mapViewKey, placePinZoom } from "./kmb-view.ts"
 import { isListedKmbRow, kmbReachMetres, STOP_CAP } from "./kmb-reach.ts"
 
 const close = kmbReachMetres(16.5, 22.38274)
 assert.ok(close > 650)
 assert.ok(kmbReachMetres(13, 22.38274) > 650)
-assert.equal(GMB_MIN_ZOOM, 16.5)
 assert.equal(placePinZoom("kmb", "kmb"), SOLO_PIN_ZOOM)
 assert.equal(placePinZoom("kmb", null), KMB_MIN_ZOOM)
 assert.equal(placePinZoom("kmb", "citybus"), KMB_MIN_ZOOM)
 assert.equal(placePinZoom("gmb", "gmb"), SOLO_PIN_ZOOM)
-assert.equal(placePinZoom("gmb", null), GMB_MIN_ZOOM)
+assert.equal(placePinZoom("gmb", null), KMB_MIN_ZOOM)
+assert.equal(placePinZoom("gmb", "kmb"), KMB_MIN_ZOOM)
 assert.equal(placePinZoom("parking", "parking"), SOLO_PIN_ZOOM)
 assert.equal(placePinZoom("parking", null), AVAILABILITY_MIN_ZOOM)
 assert.equal(placePinZoom("meter", null), AVAILABILITY_MIN_ZOOM)
@@ -22,7 +22,6 @@ assert.equal(AVAILABILITY_MIN_ZOOM, 14)
 assert.ok(AVAILABILITY_MIN_ZOOM > KMB_MIN_ZOOM)
 assert.ok(AVAILABILITY_MIN_ZOOM < 16.5)
 assert.equal(placePinZoom("citybus", "citybus"), SOLO_PIN_ZOOM)
-assert.ok(GMB_MIN_ZOOM > KMB_MIN_ZOOM)
 assert.ok(kmbReachMetres(16, 22.305) > 650)
 assert.ok(kmbReachMetres(18, 22.305) > 500)
 assert.equal(kmbReachMetres(Number.NaN, 22.38), 450)
