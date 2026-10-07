@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, useSyncExternalStore } from "react"
-import { FoldMark } from "@/components/fold-mark"
+import { Fold, FoldMark } from "@/components/fold-mark"
 import { useI18n } from "@/components/locale"
 import type { Messages } from "@/lib/i18n"
 import { allLayers, allLayersOn, beginOnly, chooseWatchedLayer, layerNamesOpen } from "@/lib/preferences"
@@ -213,11 +213,12 @@ export function LayerDock(props: LayerDockProps) {
           )
         })}
       </div>
+      <Fold open={namesOpen} across>
+      <div className="flex items-center gap-2">
       <button
         type="button"
         aria-pressed={only}
         onClick={switchOnly}
-        hidden={!namesOpen}
         className={`layer-actions shrink-0 border px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] uppercase ${
           only ? "border-cyan-200/50 bg-[#041018]/80 text-white" : "border-white/15 bg-[#041018]/70 text-cyan-50"
         }`}
@@ -228,14 +229,13 @@ export function LayerDock(props: LayerDockProps) {
         type="button"
         aria-pressed={!only && allLayersOn(props.layers)}
         onClick={showAll}
-        hidden={!namesOpen}
         className={`layer-actions shrink-0 border px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] uppercase ${
           !only && allLayersOn(props.layers) ? "border-cyan-200/50 bg-[#041018]/80 text-white" : "border-white/15 bg-[#041018]/70 text-cyan-50"
         }`}
       >
         {m.layerAll}
       </button>
-      <div id="layer-name-list" className="layer-names" hidden={!namesOpen}>
+      <div id="layer-name-list" className="layer-names">
       {LAYERS.map((layer) => {
         const on = props.layers[layer.id]
         const count = COUNTED_LAYERS.has(layer.id) ? props.counts[layer.id] : null
@@ -261,16 +261,17 @@ export function LayerDock(props: LayerDockProps) {
       <button
         type="button"
         onClick={props.onReplay}
-        hidden={!namesOpen}
         className="layer-actions shrink-0 border border-white/15 bg-[#041018]/70 px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] text-cyan-50 uppercase"
       >
         {m.replay}
       </button>
       </div>
+      </Fold>
+      </div>
       {props.layers.speed ? (
+        <Fold open={namesOpen}>
         <p
           className="layer-extra basis-full flex flex-wrap items-center gap-x-3 gap-y-1 font-[family-name:var(--font-hud)] text-[0.68rem] tracking-[0.06em] text-cyan-50/90 uppercase"
-          hidden={!namesOpen}
           aria-label={m.speedKey}
         >
           {SPEED_KEY.map((band) => (
@@ -280,6 +281,7 @@ export function LayerDock(props: LayerDockProps) {
             </span>
           ))}
         </p>
+        </Fold>
       ) : null}
       {props.pictureError ? (
         <p className="basis-full text-xs text-red-100" role="alert">

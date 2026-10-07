@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-07-fold-motion",
+    date: "2026-10-07",
+    kind: "improved",
+    en: "Opening and closing a control moves. The mark turns, and the panel eases in the same way each time.",
+    tc: "展開和收合時會有動作。記號轉動，面板每次都以同一方式緩緩打開。",
+    sc: "展开和收合时会有动作。记号转动，面板每次都以同一方式缓缓打开。",
+  },
+  {
     id: "2026-10-07-park-dots",
     date: "2026-10-07",
     kind: "fixed",

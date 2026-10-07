@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react"
-import { createPortal, flushSync } from "react-dom"
-import { FoldMark } from "@/components/fold-mark"
+import { createPortal } from "react-dom"
+import { Fold, FoldMark } from "@/components/fold-mark"
 import { useI18n } from "@/components/locale"
 import { boundaryGlance } from "@/lib/control-points"
 import { crossingsFrom, nearestApproach } from "@/lib/crossings"
@@ -120,18 +120,7 @@ export function OpsHud(props: OpsHudProps) {
   const worstHall = firstOpenBoundary(board.boundary)
   const changeOpen = (next: boolean) => {
     if (next === open) return
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (reduced || typeof document.startViewTransition !== "function") {
-      props.onOpenChange(next)
-      return
-    }
-    try {
-      document.startViewTransition(() => {
-        flushSync(() => props.onOpenChange(next))
-      })
-    } catch {
-      props.onOpenChange(next)
-    }
+    props.onOpenChange(next)
   }
   const show = (next: IntelTab, item: IntelItem | undefined) => {
     setTab(next)
@@ -226,22 +215,21 @@ export function OpsHud(props: OpsHudProps) {
   }, [barOpen, locale, open, props.mapLive])
   return (
     <div className="@container/hud pointer-events-none absolute inset-0 z-[5]">
-      {barOpen ? null : (
+      <Fold open={!barOpen} className="pointer-events-auto absolute top-2 left-2 z-[6] sm:hidden">
         <button
           type="button"
           aria-expanded={false}
           onClick={() => setBarOpen(true)}
-          className="pointer-events-auto absolute top-2 left-2 inline-flex items-center gap-1.5 border border-cyan-200/30 bg-[#041018]/88 px-2 py-1 font-[family-name:var(--font-hud)] text-sm text-white sm:hidden"
+          className="inline-flex items-center gap-1.5 border border-cyan-200/30 bg-[#041018]/88 px-2 py-1 font-[family-name:var(--font-hud)] text-sm text-white"
         >
           {m.productName}
           <FoldMark open={false} />
         </button>
-      )}
+      </Fold>
+      <Fold open={barOpen} live className="bar-fold pointer-events-auto absolute top-2 right-2 left-2 sm:top-3 sm:right-3 sm:left-3 lg:right-4 lg:left-16">
       <header
         data-map-chrome="top"
-        className={`pointer-events-auto absolute top-2 right-2 left-2 flex flex-row items-center gap-1 border border-cyan-200/30 bg-[#041018]/80 px-1.5 py-1 shadow-[0_0_24px_rgba(34,211,238,0.08)] backdrop-blur-md sm:top-3 sm:right-3 sm:left-3 sm:flex-col sm:items-stretch sm:gap-1.5 sm:px-2 sm:py-1.5 @min-[64rem]/hud:flex-row @min-[64rem]/hud:items-center lg:right-4 lg:left-16 ${
-          barOpen ? "" : "max-sm:hidden"
-        }`}
+        className="flex flex-row items-center gap-1 border border-cyan-200/30 bg-[#041018]/80 px-1.5 py-1 shadow-[0_0_24px_rgba(34,211,238,0.08)] backdrop-blur-md sm:flex-col sm:items-stretch sm:gap-1.5 sm:px-2 sm:py-1.5 @min-[64rem]/hud:flex-row @min-[64rem]/hud:items-center"
       >
         <div className="flex shrink-0 items-center gap-1 sm:min-w-0 sm:flex-wrap sm:gap-3">
           <div className="min-w-0 max-w-14 sm:max-w-none">
@@ -404,6 +392,7 @@ export function OpsHud(props: OpsHudProps) {
           </button>
         </div>
       </header>
+      </Fold>
       <section
         id="harbour-intel"
         data-map-chrome="panel"
@@ -414,6 +403,7 @@ export function OpsHud(props: OpsHudProps) {
             : "pointer-events-auto absolute inset-x-0 bottom-[var(--marquee-bottom,3.5rem)] z-[6] border-t border-cyan-200/30 bg-[#041018]/88 shadow-[0_0_24px_rgba(34,211,238,0.08)] backdrop-blur-md sm:bottom-14"
         }
       >
+        <Fold open={!open} className="intel-strip-fold">
         <div className="intel-strip items-center gap-1 px-1.5 py-1">
           <span className="shrink-0 font-[family-name:var(--font-hud)] text-[0.62rem] tracking-[0.14em] text-cyan-100/70 uppercase">
             {tabLabel("ranked", m)}
@@ -433,7 +423,8 @@ export function OpsHud(props: OpsHudProps) {
             <FoldMark open={false} />
           </button>
         </div>
-        {open ? (
+        </Fold>
+        <Fold open={open} className="intel-panel-fold">
         <div className="intel-panel">
           <div className="flex items-center gap-1 px-1.5 py-1">
             <div role="tablist" aria-label={m.intel} className="flex min-w-0 flex-1 flex-wrap gap-0.5">
@@ -493,7 +484,7 @@ export function OpsHud(props: OpsHudProps) {
             )}
           </div>
         </div>
-        ) : null}
+        </Fold>
       </section>
     </div>
   )
@@ -567,21 +558,21 @@ function OriginMenu(props: {
           <FoldMark open={open} />
         </span>
       </button>
-      {open && box
+      {box
         ? createPortal(
-            <div
-              ref={menuRef}
-              role="listbox"
-              aria-label={m.harbourFrom}
-              style={{ top: box.top, left: box.left, width: box.width, maxHeight: box.maxHeight }}
-              className="fixed z-50 overflow-y-auto border border-cyan-200/30 bg-[#041018] p-1 text-sm text-white shadow-[0_0_24px_rgba(34,211,238,0.12)]"
+            <Fold
+              open={open}
+              className="fixed z-50 border border-cyan-200/30 bg-[#041018] text-sm text-white shadow-[0_0_24px_rgba(34,211,238,0.12)]"
+              style={{ top: box.top, left: box.left, width: box.width }}
             >
+            <div ref={menuRef} role="listbox" aria-label={m.harbourFrom} className="overflow-y-auto p-1" style={{ maxHeight: box.maxHeight }}>
               <OriginChoice selected={props.pinnedId == null} onChoose={() => choose(null)}>
                 {m.followMap(props.nearest ? displayText(locale, props.nearest.nameTc, props.nearest.name) : "")}
               </OriginChoice>
               <OriginList label={m.fromIsland} points={props.island} pinnedId={props.pinnedId} onChoose={choose} />
               <OriginList label={m.fromKowloon} points={props.kowloon} pinnedId={props.pinnedId} onChoose={choose} />
-            </div>,
+            </div>
+            </Fold>,
             document.body,
           )
         : null}
