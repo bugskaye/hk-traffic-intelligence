@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react"
 import { createPortal, flushSync } from "react-dom"
+import { FoldMark } from "@/components/fold-mark"
 import { useI18n } from "@/components/locale"
 import { boundaryGlance } from "@/lib/control-points"
 import { crossingsFrom, nearestApproach } from "@/lib/crossings"
@@ -230,9 +231,10 @@ export function OpsHud(props: OpsHudProps) {
           type="button"
           aria-expanded={false}
           onClick={() => setBarOpen(true)}
-          className="pointer-events-auto absolute top-2 left-2 border border-cyan-200/30 bg-[#041018]/88 px-2 py-1 font-[family-name:var(--font-hud)] text-sm text-white sm:hidden"
+          className="pointer-events-auto absolute top-2 left-2 inline-flex items-center gap-1.5 border border-cyan-200/30 bg-[#041018]/88 px-2 py-1 font-[family-name:var(--font-hud)] text-sm text-white sm:hidden"
         >
           {m.productName}
+          <FoldMark open={false} />
         </button>
       )}
       <header
@@ -395,9 +397,10 @@ export function OpsHud(props: OpsHudProps) {
             type="button"
             aria-expanded={barOpen}
             onClick={() => setBarOpen(false)}
-            className="shrink-0 border border-white/15 px-1.5 py-1 font-[family-name:var(--font-hud)] text-[0.65rem] text-cyan-50 sm:hidden"
+            className="inline-flex shrink-0 items-center gap-1 border border-white/15 px-1.5 py-1 font-[family-name:var(--font-hud)] text-[0.65rem] text-cyan-50 sm:hidden"
           >
             {m.hide}
+            <FoldMark open />
           </button>
         </div>
       </header>
@@ -424,9 +427,10 @@ export function OpsHud(props: OpsHudProps) {
             aria-expanded={props.choice === true}
             aria-controls="harbour-intel-list"
             onClick={() => changeOpen(true)}
-            className="ml-1 shrink-0 border border-white/15 px-2 py-1 font-[family-name:var(--font-hud)] text-[0.65rem] tracking-[0.12em] text-cyan-50 uppercase"
+            className="ml-1 inline-flex shrink-0 items-center gap-1 border border-white/15 px-2 py-1 font-[family-name:var(--font-hud)] text-[0.65rem] tracking-[0.12em] text-cyan-50 uppercase"
           >
             {m.intel}
+            <FoldMark open={false} />
           </button>
         </div>
         {open ? (
@@ -462,9 +466,10 @@ export function OpsHud(props: OpsHudProps) {
               aria-expanded={open}
               aria-controls="harbour-intel-list"
               onClick={() => changeOpen(false)}
-              className="ml-auto shrink-0 border border-white/15 px-2 py-1 font-[family-name:var(--font-hud)] text-[0.65rem] tracking-[0.12em] text-cyan-50 uppercase"
+              className="ml-auto inline-flex shrink-0 items-center gap-1 border border-white/15 px-2 py-1 font-[family-name:var(--font-hud)] text-[0.65rem] tracking-[0.12em] text-cyan-50 uppercase"
             >
               {m.hide}
+              <FoldMark open />
             </button>
           </div>
           <div
@@ -555,8 +560,11 @@ function OriginMenu(props: {
         className="block max-w-28 border border-white/10 bg-black/30 px-1 py-1 text-left sm:max-w-56 sm:px-2"
       >
         <span className="block font-[family-name:var(--font-hud)] text-[0.58rem] tracking-[0.14em] text-cyan-100/80 uppercase">{m.harbourFrom}</span>
-        <span className="block truncate font-[family-name:var(--font-hud)] text-sm leading-none text-white sm:text-base">
-          {props.pinnedId ? road : m.followMap(road)}
+        <span className="flex items-center gap-1">
+          <span className="truncate font-[family-name:var(--font-hud)] text-sm leading-none text-white sm:text-base">
+            {props.pinnedId ? road : m.followMap(road)}
+          </span>
+          <FoldMark open={open} />
         </span>
       </button>
       {open && box

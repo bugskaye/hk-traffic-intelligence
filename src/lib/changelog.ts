@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-07-fold-marks",
+    date: "2026-10-07",
+    kind: "improved",
+    en: "The intel card, the harbour bar, and the crossing list use the same mark as Layers. A closed control points up. An open one points down.",
+    tc: "情報、過海列和口岸清單用與圖層相同的記號。收合時指向上，展開時指向下。",
+    sc: "情报、过海列和口岸清单用与图层相同的记号。收合时指向上，展开时指向下。",
+  },
+  {
     id: "2026-10-07-layer-bar-fold",
     date: "2026-10-07",
     kind: "improved",

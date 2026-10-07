@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState, useSyncExternalStore } from "react"
+import { FoldMark } from "@/components/fold-mark"
 import { useI18n } from "@/components/locale"
 import type { Messages } from "@/lib/i18n"
 import { allLayers, allLayersOn, beginOnly, chooseWatchedLayer, layerNamesOpen } from "@/lib/preferences"
@@ -192,7 +193,7 @@ export function LayerDock(props: LayerDockProps) {
         }`}
       >
         {namesOpen ? m.layerHide : m.layerNames}
-        <span aria-hidden="true" className={namesOpen ? "layer-mark layer-mark-down" : "layer-mark layer-mark-up"} />
+        <FoldMark open={namesOpen} />
       </button>
       <div className="inline-flex shrink-0 border border-white/15" role="group" aria-label={m.basemap}>
         {BASEMAPS.map((id) => {
