@@ -177,6 +177,8 @@ export function beginOnly(layers: WatchLayers): WatchLayers {
 
 export function chooseWatchedLayer(only: boolean, layers: WatchLayers, id: WatchLayer): { only: boolean; layers: WatchLayers } {
   if (!only) return { only: false, layers: { ...layers, [id]: !layers[id] } }
+  const current = soleLayer(layers)
+  if (current && current !== id) return { only: false, layers: { ...layers, [id]: true } }
   return { only: true, layers: soloLayers(layers, id) }
 }
 

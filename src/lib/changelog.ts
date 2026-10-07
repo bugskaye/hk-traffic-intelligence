@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-07-only-second-layer",
+    date: "2026-10-07",
+    kind: "fixed",
+    en: "Choosing a second layer leaves Only, and both layers stay on.",
+    tc: "再選一層會離開「只看」，兩層一起顯示。",
+    sc: "再选一层会离开「只看」，两层一起显示。",
+  },
+  {
     id: "2026-10-07-minibus-names",
     date: "2026-10-07",
     kind: "fixed",
