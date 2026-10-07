@@ -26,10 +26,6 @@ export type ParkingSpace = {
 const PARK_CAP = 40
 const WIDE_RADIUS_M = 80_000
 
-export function deferPlacePlates(count: number, plates: boolean): boolean {
-  return plates && count > PARK_CAP
-}
-
 export function soloParkingRadiusMetres(zoom: number, lat: number): number {
   if (!Number.isFinite(zoom)) return WIDE_RADIUS_M
   return Math.min(WIDE_RADIUS_M, Math.max(800, metresPerPixel(zoom, lat) * 1_600))

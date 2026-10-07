@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { applyLiveBody } from "@/lib/last-reading"
+import { continueLiveRead, nextReading, scheduleLiveRead } from "@/lib/last-reading"
 import { politeQueue } from "@/lib/polite-fetch"
 
 const arrivalLane = politeQueue(1)
@@ -9,76 +9,78 @@ const arrivalLane = politeQueue(1)
 export function useLiveJson<T extends { ok: boolean }>(url: string | null, intervalMs = 60_000, shareArrivalLane = false): { data: T | null; error: string | null } {
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const held = useRef<{ data: T | null; error: string | null; generation: number }>({ data: null, error: null, generation: 0 })
-  const serial = useRef(0)
-  const mounted = useRef(true)
+  const urlRef = useRef(url)
+  const shareRef = useRef(shareArrivalLane)
+  const gate = useRef({ running: false, again: false })
+  const stopped = useRef(false)
 
   useEffect(() => {
-    mounted.current = true
+    stopped.current = false
     return () => {
-      mounted.current = false
+      stopped.current = true
     }
   }, [])
 
   useEffect(() => {
+    urlRef.current = url
+    shareRef.current = shareArrivalLane
     if (!url) return
-    let stopped = false
-    let running = false
-    let again = false
+    let alive = true
 
-    const publish = (incoming: T, request: number, stale: boolean, failure: string) => {
-      if (!mounted.current) return
-      const next = applyLiveBody(held.current, incoming, request, stale, failure)
-      held.current = next
-      setData(next.data)
-      setError(next.error)
-    }
-
-    const load = async () => {
-      if (stopped || !mounted.current) return
-      if (running) {
-        again = true
-        return
+    const load = async (keep: boolean) => {
+      if (stopped.current) return
+      const step = scheduleLiveRead(gate.current.running, urlRef.current)
+      switch (step) {
+        case "stop":
+          return
+        case "wait":
+          if (keep) gate.current.again = true
+          return
+        case "fetch":
+          break
+        default: {
+          const exhaustive: never = step
+          return exhaustive
+        }
       }
-      running = true
+      gate.current.running = true
       try {
         do {
-          again = false
-          const request = ++serial.current
-          const run = shareArrivalLane ? (task: () => Promise<void>) => arrivalLane(task) : (task: () => Promise<void>) => task()
+          gate.current.again = false
+          const target = urlRef.current
+          if (!target || stopped.current) break
+          const run = shareRef.current ? (task: () => Promise<void>) => arrivalLane(task) : (task: () => Promise<void>) => task()
           await run(async () => {
-            if (!mounted.current) return
+            if (stopped.current) return
             try {
-              const response = await fetch(url, { cache: "no-store" })
+              const response = await fetch(target, { cache: "no-store" })
               const body: unknown = await response.json()
-              if (!mounted.current) return
-              const stale = stopped || request !== serial.current
+              if (stopped.current) return
               if (!hasOk(body)) {
-                if (stale) return
-                const message = `Unexpected response (${response.status})`
-                held.current = { ...held.current, error: message }
-                setError(message)
+                if (urlRef.current === target) setError(`Unexpected response (${response.status})`)
                 return
               }
               const incoming = body as T
-              publish(incoming, request, stale, incoming.ok ? "" : readingError(incoming, response.status))
+              setData((current) => nextReading(current, incoming))
+              if (incoming.ok || urlRef.current === target) setError(incoming.ok ? null : readingError(incoming, response.status))
             } catch (cause) {
-              if (!mounted.current || stopped || request !== serial.current) return
-              const message = cause instanceof Error ? cause.message : "Request failed"
-              held.current = { ...held.current, error: message }
-              setError(message)
+              if (stopped.current || urlRef.current !== target) return
+              setError(cause instanceof Error ? cause.message : "Request failed")
             }
           })
-        } while (again && !stopped && mounted.current)
+          if (continueLiveRead(target, urlRef.current)) gate.current.again = true
+        } while (gate.current.again && !stopped.current)
       } finally {
-        running = false
+        gate.current.running = false
       }
     }
 
-    void load()
-    const timer = window.setInterval(() => void load(), intervalMs)
+    void load(false)
+    const timer = window.setInterval(() => {
+      if (alive) void load(true)
+    }, intervalMs)
     return () => {
-      stopped = true
+      alive = false
       window.clearInterval(timer)
     }
   }, [intervalMs, shareArrivalLane, url])

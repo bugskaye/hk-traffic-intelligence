@@ -4,34 +4,12 @@ export function nextReading<T extends { ok: boolean }>(current: T | null, incomi
   return incoming
 }
 
-export function takeReading<T extends { ok: boolean }>(
-  current: T | null,
-  currentGeneration: number,
-  incoming: T,
-  incomingGeneration: number,
-  stale: boolean,
-): T | null {
-  if (incoming.ok) {
-    if (current?.ok && incomingGeneration < currentGeneration) return current
-    return incoming
-  }
-  if (stale) return current
-  return nextReading(current, incoming)
+export function scheduleLiveRead(running: boolean, latest: string | null): "wait" | "fetch" | "stop" {
+  if (!latest) return "stop"
+  if (running) return "wait"
+  return "fetch"
 }
 
-export function applyLiveBody<T extends { ok: boolean }>(
-  state: { data: T | null; error: string | null; generation: number },
-  incoming: T,
-  incomingGeneration: number,
-  stale: boolean,
-  failure: string,
-): { data: T | null; error: string | null; generation: number } {
-  const data = takeReading(state.data, state.generation, incoming, incomingGeneration, stale)
-  if (incoming.ok) {
-    if (data !== incoming) return state
-    return { data, error: null, generation: incomingGeneration }
-  }
-  if (data?.ok) return { data, error: stale ? state.error : failure, generation: state.generation }
-  if (stale) return { data, error: state.error, generation: state.generation }
-  return { data, error: failure, generation: incomingGeneration }
+export function continueLiveRead(fetched: string | null, latest: string | null): boolean {
+  return fetched !== latest
 }

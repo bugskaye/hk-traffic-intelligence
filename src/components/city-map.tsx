@@ -45,7 +45,6 @@ import {
 } from "@/components/map-cards"
 import { directedRouteMarks, stopPlate, stopPlateKey, type StopPlate } from "@/lib/stop-plate"
 import { AVAILABILITY_MIN_ZOOM, SOLO_PIN_ZOOM, mapViewKey, placePinZoom } from "@/lib/kmb-view"
-import { deferPlacePlates } from "@/lib/parking-parks"
 import { meterColorStops, meterInk, meterPin, meterPlateCount, type MeterPole } from "@/lib/meter-poles"
 import { chargersInsideParks, type ChargerPlace } from "@/lib/ev-chargers"
 import { soleLayer } from "@/lib/preferences"
@@ -653,9 +652,7 @@ export function CityMap({
   useEffect(() => {
     const map = mapRef.current
     if (disabled || !map || !mapReady) return
-    let frame = 0
     const paint = () => {
-      window.cancelAnimationFrame(frame)
       const zoom = map.getZoom()
       const labels = zoom >= LABEL_MIN_ZOOM
       const counts = zoom >= COUNT_MIN_ZOOM
@@ -707,23 +704,16 @@ export function CityMap({
       ]
       const hosted = layers.charger && chargers && hostParks.length > 0 ? chargersInsideParks(chargers, hostParks) : new globalThis.Map<string, ChargerPlace>()
       const motorcycleIds = layers.motorcycle && motorcycles ? new Set(motorcycles.map((park) => park.id)) : null
-      const plates = labels || counts
-      const later: Array<() => void> = []
       if (!layers.parking || !parking) {
         geoJsonSource(map, "parking")?.setData(emptyCollection())
       } else {
         const parks = motorcycleIds ? parking.filter((park) => !motorcycleIds.has(park.id)) : parking
-        paintCountedPlaces(map, "parking", parks.length, plates, (withPlates) => parkingCollection(map, parks, locale, withPlates && labels, withPlates && counts, hosted), later)
+        geoJsonSource(map, "parking")?.setData(parkingCollection(map, parks, locale, labels, counts, hosted))
       }
       if (!layers.motorcycle || !motorcycles) {
         geoJsonSource(map, "motorcycle")?.setData(emptyCollection())
       } else {
-        paintCountedPlaces(map, "motorcycle", motorcycles.length, plates, (withPlates) => motorcycleCollection(map, motorcycles, locale, withPlates && labels, withPlates && counts, hosted), later)
-      }
-      if (later.length > 0) {
-        frame = window.requestAnimationFrame(() => {
-          for (const job of later) job()
-        })
+        geoJsonSource(map, "motorcycle")?.setData(motorcycleCollection(map, motorcycles, locale, labels, counts, hosted))
       }
       if (!layers.kerb || !kerbs) {
         geoJsonSource(map, "kerb")?.setData(emptyCollection())
@@ -744,7 +734,6 @@ export function CityMap({
     paint()
     map.on("zoomend", paint)
     return () => {
-      window.cancelAnimationFrame(frame)
       map.off("zoomend", paint)
     }
   }, [chargers, citybus, controlPoints, disabled, ferry, gmb, incidents, kmb, kerbs, layers.charger, layers.citybus, layers.ferry, layers.gmb, layers.kerb, layers.kmb, layers.lrt, layers.meter, layers.motorcycle, layers.mtrbus, layers.nlb, layers.parking, locale, lrt, mapReady, meters, motorcycles, mtr, mtrBus, nlb, parking, picture, styleEpoch])
@@ -1277,26 +1266,6 @@ function pointAlong(line: AnimLine, t: number): [number, number] {
 function geoJsonSource(map: Map, id: string): GeoJSONSource | null {
   const source = map.getSource(id)
   return source instanceof GeoJSONSource ? source : null
-}
-
-function paintCountedPlaces(
-  map: Map,
-  sourceId: string,
-  count: number,
-  plates: boolean,
-  draw: (withPlates: boolean) => GeoJSON.FeatureCollection,
-  later: Array<() => void>,
-) {
-  const source = geoJsonSource(map, sourceId)
-  if (!source) return
-  if (!deferPlacePlates(count, plates)) {
-    source.setData(draw(plates))
-    return
-  }
-  source.setData(draw(false))
-  later.push(() => {
-    geoJsonSource(map, sourceId)?.setData(draw(true))
-  })
 }
 
 function overlaySlot(map: Map): string | undefined {
