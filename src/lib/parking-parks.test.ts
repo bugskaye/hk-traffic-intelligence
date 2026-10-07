@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { collapseSameSites, parseOneStopParks, parseOneStopSpaces, parseParkingParks, parseParkingSpaces, parksNear, publishedMotorcycleVacancies, publishedPrivateVacancies, oneStopCount, soloParkingRadiusMetres, type ParkingPark } from "./parking-parks.ts"
+import { collapseSameSites, parkLists, parseOneStopParks, parseOneStopSpaces, parseParkingParks, parseParkingSpaces, parksNear, publishedMotorcycleVacancies, publishedPrivateVacancies, oneStopCount, soloParkingRadiusMetres, type ParkingPark } from "./parking-parks.ts"
 
 const near: ParkingPark = {
   id: "near",
@@ -13,6 +13,13 @@ const near: ParkingPark = {
 }
 const far: ParkingPark = { ...near, id: "far", lng: 114.3, lat: 22.4 }
 
+const listed = parkLists(
+  [near, far],
+  new Map([["near", 4]]),
+  new Map([["far", 2]]),
+)
+assert.deepEqual(listed.parks.map((park) => [park.id, park.cars]), [["near", 4], ["far", null]])
+assert.deepEqual(listed.motorcycles.map((park) => [park.id, park.motorcycle]), [["far", 2]])
 assert.deepEqual(parksNear([far, near], 114.17, 22.28, 800).map((park) => park.id), ["near"])
 assert.equal(parksNear([near, far], 114.17, 22.28, 80_000, 1)[0]?.id, "near")
 

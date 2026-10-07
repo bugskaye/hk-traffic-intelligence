@@ -1,4 +1,4 @@
-import { loadParkingPlaces } from "@/lib/parking"
+import { loadParkReading } from "@/lib/parking"
 
 export const dynamic = "force-dynamic"
 
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     return Response.json({ ok: false, error: "Parking centre missing", parks: [] }, { status: 400 })
   }
   const zoom = Number(url.searchParams.get("zoom"))
-  const places = await loadParkingPlaces(lng, lat, zoom, url.searchParams.get("wide") === "1")
-  if (!places.ok) return Response.json({ ok: false, error: "Parking catalogue failed", parks: [] }, { status: 502 })
+  const places = await loadParkReading(lng, lat, zoom, url.searchParams.get("wide") === "1")
+  if (!places.ok) return Response.json({ ok: false, error: "Parking catalogue failed", parks: [], motorcycles: [] }, { status: 502 })
   return Response.json(places)
 }

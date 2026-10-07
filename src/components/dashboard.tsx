@@ -9,7 +9,7 @@ import { useLiveJson } from "@/components/use-live-json"
 import { useI18n } from "@/components/locale"
 import { decorateControlPoints } from "@/lib/control-points"
 import { PLACE_POLL_MS, placePinZoom } from "@/lib/kmb-view"
-import { MOTORCYCLE_POLL_MS, PARKING_POLL_MS, type MotorcyclePlacesResponse, type ParkingPlacesResponse } from "@/lib/parking"
+import { PARKING_POLL_MS, type ParkReadingResponse } from "@/lib/parking"
 import { KERB_POLL_MS, type KerbPlacesResponse } from "@/lib/kerb"
 import { METER_POLL_MS, type MeterPlacesResponse } from "@/lib/meter-poles"
 import type { ChargerPlacesResponse } from "@/lib/ev-chargers"
@@ -88,10 +88,10 @@ export function Dashboard() {
       ? `lng=${view.lng.toFixed(3)}&lat=${view.lat.toFixed(3)}&zoom=${view.zoom.toFixed(2)}`
       : null
   const mtrBusPlacesUrl = layers.mtrbus && mtrBusQuery ? `/api/mtr-bus/places?${mtrBusQuery}${sole === "mtrbus" ? "&wide=1" : ""}` : null
-  const parkingWide = sole === "parking"
-  const parkingPlacesUrl =
-    layers.parking && view && view.zoom >= placePinZoom("parking", sole)
-      ? `/api/parking/places?lng=${view.lng.toFixed(3)}&lat=${view.lat.toFixed(3)}&zoom=${view.zoom.toFixed(2)}${parkingWide ? "&wide=1" : ""}`
+  const parkWide = sole === "parking" || sole === "motorcycle"
+  const parkPlacesUrl =
+    (layers.parking || layers.motorcycle) && view && view.zoom >= placePinZoom("parking", sole)
+      ? `/api/parking/places?lng=${view.lng.toFixed(3)}&lat=${view.lat.toFixed(3)}&zoom=${view.zoom.toFixed(2)}${parkWide ? "&wide=1" : ""}`
       : null
   const meterWide = sole === "meter"
   const meterPlacesUrl =
@@ -111,18 +111,12 @@ export function Dashboard() {
   const nlbPlacesLive = useLiveJson<NlbPlacesResponse>(nlbPlacesUrl, PLACE_POLL_MS)
   const mtrBusPlacesLive = useLiveJson<CitybusPlacesResponse>(mtrBusPlacesUrl, PLACE_POLL_MS)
   const ferryLive = useLiveJson<FerryResponse>(layers.ferry ? "/api/ferry" : null, 60_000)
-  const motorcycleWide = sole === "motorcycle"
-  const motorcyclePlacesUrl =
-    layers.motorcycle && view && view.zoom >= placePinZoom("motorcycle", sole)
-      ? `/api/parking/motorcycles?lng=${view.lng.toFixed(3)}&lat=${view.lat.toFixed(3)}&zoom=${view.zoom.toFixed(2)}${motorcycleWide ? "&wide=1" : ""}`
-      : null
-  const parkingPlacesLive = useLiveJson<ParkingPlacesResponse>(parkingPlacesUrl, PARKING_POLL_MS)
+  const parkPlacesLive = useLiveJson<ParkReadingResponse>(parkPlacesUrl, PARKING_POLL_MS)
   const kerbWide = sole === "kerb"
   const kerbPlacesUrl =
     layers.kerb && view && view.zoom >= placePinZoom("kerb", sole)
       ? `/api/kerb/places?lng=${view.lng.toFixed(3)}&lat=${view.lat.toFixed(3)}&zoom=${view.zoom.toFixed(2)}${kerbWide ? "&wide=1" : ""}`
       : null
-  const motorcyclePlacesLive = useLiveJson<MotorcyclePlacesResponse>(motorcyclePlacesUrl, MOTORCYCLE_POLL_MS)
   const kerbPlacesLive = useLiveJson<KerbPlacesResponse>(kerbPlacesUrl, KERB_POLL_MS)
   const meterPlacesLive = useLiveJson<MeterPlacesResponse>(meterPlacesUrl, METER_POLL_MS)
   const chargerPlacesLive = useLiveJson<ChargerPlacesResponse>(chargerPlacesUrl, CHARGER_POLL_MS)
@@ -179,8 +173,8 @@ export function Dashboard() {
         nlb={nlb}
         mtrBus={mtrBus}
         ferry={ferry?.ok ? ferry : null}
-        parking={parkingPlacesLive.data?.ok ? parkingPlacesLive.data.parks : null}
-        motorcycles={motorcyclePlacesLive.data?.ok ? motorcyclePlacesLive.data.parks : null}
+        parking={layers.parking && parkPlacesLive.data?.ok ? parkPlacesLive.data.parks : null}
+        motorcycles={layers.motorcycle && parkPlacesLive.data?.ok ? parkPlacesLive.data.motorcycles : null}
         kerbs={kerbPlacesLive.data?.ok ? kerbPlacesLive.data.rows : null}
         meters={meterPlacesLive.data?.ok ? meterPlacesLive.data.poles : null}
         chargers={chargerPlacesLive.data?.ok ? chargerPlacesLive.data.places : null}
@@ -284,8 +278,8 @@ export function Dashboard() {
         nlbError={liveError(nlbPlacesLive.error, nlbPlacesLive.data, "New Lantao Bus stops failed")}
         mtrBusError={liveError(mtrBusPlacesLive.error, mtrBusPlacesLive.data, "MTR bus stops failed")}
         ferryError={liveError(ferryLive.error, ferryLive.data, "Ferry arrivals failed")}
-        parkingError={liveError(parkingPlacesLive.error, parkingPlacesLive.data, "Parking catalogue failed")}
-        motorcycleError={liveError(motorcyclePlacesLive.error, motorcyclePlacesLive.data, "Motorcycle parks failed")}
+        parkingError={layers.parking ? liveError(parkPlacesLive.error, parkPlacesLive.data, "Parking catalogue failed") : null}
+        motorcycleError={layers.motorcycle ? liveError(parkPlacesLive.error, parkPlacesLive.data, "Motorcycle parks failed") : null}
         kerbError={liveError(kerbPlacesLive.error, kerbPlacesLive.data, "Motorcycle bays failed")}
         meterError={liveError(meterPlacesLive.error, meterPlacesLive.data, "Meter catalogue failed")}
         chargerError={liveError(chargerPlacesLive.error, chargerPlacesLive.data, "Charger catalogue failed")}

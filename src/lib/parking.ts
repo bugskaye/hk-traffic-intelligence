@@ -1,11 +1,14 @@
 import { fetchUpstream } from "@/lib/upstream"
 import { kmbReachMetres } from "@/lib/kmb-reach"
-import { collapseSameSites, oneStopCount, parseOneStopParks, parseOneStopSpaces, parksNear, soloParkingRadiusMetres, type ParkingPark, type ParkingSpace } from "@/lib/parking-parks"
+import { collapseSameSites, oneStopCount, parkLists, parseOneStopParks, parseOneStopSpaces, parksNear, soloParkingRadiusMetres, type ParkingPark, type ParkingSpace } from "@/lib/parking-parks"
 
 export type ParkingPlace = ParkingPark & { cars: number | null }
 export type ParkingPlacesResponse = { ok: true; parks: ParkingPlace[] } | { ok: false; error?: string; parks: ParkingPlace[] }
 export type MotorcyclePark = ParkingPark & { motorcycle: number }
 export type MotorcyclePlacesResponse = { ok: true; parks: MotorcyclePark[] } | { ok: false; error?: string; parks: MotorcyclePark[] }
+export type ParkReadingResponse =
+  | { ok: true; parks: ParkingPlace[]; motorcycles: MotorcyclePark[] }
+  | { ok: false; error?: string; parks: ParkingPlace[]; motorcycles: MotorcyclePark[] }
 
 const ONE_STOP = "https://api.data.gov.hk/v1/carpark-info-vacancy"
 const INFO_ZH = `${ONE_STOP}?data=info&lang=zh_TW`
@@ -13,46 +16,28 @@ const INFO_EN = `${ONE_STOP}?data=info&lang=en_US`
 const VACANCY_URL = `${ONE_STOP}?data=vacancy&vehicleTypes=privateCar,LGV,HGV,motorCycle&lang=zh_TW`
 const INFO_MS = 12 * 60 * 60 * 1000
 const VACANCY_MS = 60_000
-export const MOTORCYCLE_POLL_MS = VACANCY_MS
 export const PARKING_POLL_MS = VACANCY_MS
 const WIDE_CAP = 600
 
-export async function loadParkingPlaces(
+export async function loadParkReading(
   lng: number,
   lat: number,
   zoom = Number.NaN,
   wide = false,
-): Promise<{ ok: true; parks: ParkingPlace[] } | { ok: false }> {
+): Promise<{ ok: true; parks: ParkingPlace[]; motorcycles: MotorcyclePark[] } | { ok: false }> {
   const [parks, vacancy] = await Promise.all([catalogue(), readJson(VACANCY_URL, VACANCY_MS)])
   if (!parks) return { ok: false }
-  const counts = vacancy ? oneStopCount(vacancy, "privateCar") : new Map<string, number>()
-  const listed = parks.map((park) => ({ ...park, cars: counts.get(park.id) ?? null }))
+  const listed = parkLists(
+    parks,
+    vacancy ? oneStopCount(vacancy, "privateCar") : new Map<string, number>(),
+    vacancy ? oneStopCount(vacancy, "motorCycle") : new Map<string, number>(),
+  )
+  const radius = wide ? soloParkingRadiusMetres(zoom, lat) : kmbReachMetres(zoom, lat)
+  const cap = wide ? WIDE_CAP : undefined
   return {
     ok: true,
-    parks: wide
-      ? parksNear(listed, lng, lat, soloParkingRadiusMetres(zoom, lat), WIDE_CAP)
-      : parksNear(listed, lng, lat, kmbReachMetres(zoom, lat)),
-  }
-}
-
-export async function loadMotorcyclePlaces(
-  lng: number,
-  lat: number,
-  zoom = Number.NaN,
-  wide = false,
-): Promise<{ ok: true; parks: MotorcyclePark[] } | { ok: false }> {
-  const [parks, vacancy] = await Promise.all([catalogue(), readJson(VACANCY_URL, VACANCY_MS)])
-  if (!parks || !vacancy) return { ok: false }
-  const counts = oneStopCount(vacancy, "motorCycle")
-  const listed = parks.flatMap((park) => {
-    const motorcycle = counts.get(park.id)
-    return motorcycle == null ? [] : [{ ...park, motorcycle }]
-  })
-  return {
-    ok: true,
-    parks: wide
-      ? parksNear(listed, lng, lat, soloParkingRadiusMetres(zoom, lat), WIDE_CAP)
-      : parksNear(listed, lng, lat, kmbReachMetres(zoom, lat)),
+    parks: parksNear(listed.parks, lng, lat, radius, cap),
+    motorcycles: parksNear(listed.motorcycles, lng, lat, radius, cap),
   }
 }
 
@@ -70,7 +55,7 @@ async function catalogue(): Promise<ParkingPark[] | null> {
 
 async function readJson(url: string, ttlMs: number): Promise<unknown | null> {
   try {
-    const response = await fetchUpstream(url, ttlMs, { timeoutMs: 8_000 })
+    const response = await fetchUpstream(url, ttlMs)
     if (response.status !== 200) return null
     const text = new TextDecoder().decode(response.body).replace(/^\uFEFF/, "")
     return JSON.parse(text) as unknown

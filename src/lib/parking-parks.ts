@@ -31,6 +31,20 @@ export function soloParkingRadiusMetres(zoom: number, lat: number): number {
   return Math.min(WIDE_RADIUS_M, Math.max(800, metresPerPixel(zoom, lat) * 1_600))
 }
 
+export function parkLists<T extends ParkingPark>(
+  parks: readonly T[],
+  cars: ReadonlyMap<string, number>,
+  motorcycles: ReadonlyMap<string, number>,
+): { parks: (T & { cars: number | null })[]; motorcycles: (T & { motorcycle: number })[] } {
+  return {
+    parks: parks.map((park) => ({ ...park, cars: cars.get(park.id) ?? null })),
+    motorcycles: parks.flatMap((park) => {
+      const motorcycle = motorcycles.get(park.id)
+      return motorcycle == null ? [] : [{ ...park, motorcycle }]
+    }),
+  }
+}
+
 export function parksNear<T extends ParkingPark>(parks: readonly T[], lng: number, lat: number, radiusM: number, cap = PARK_CAP): T[] {
   const near = parks.flatMap((park) => {
     const metres = metresBetween(lng, lat, park.lng, park.lat)
