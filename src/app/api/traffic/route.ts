@@ -2,6 +2,7 @@ import { parseCsv } from "@/lib/csv"
 import { fetchUpstream } from "@/lib/upstream"
 import { buildCorridors, laneSpeed, type DetectorSite } from "@/lib/corridors"
 import { fetchText } from "@/lib/fetch-text"
+import { speedReadingTtl } from "@/lib/speed"
 import {
   corridorsFromSegments,
   lamppostCorridors,
@@ -61,10 +62,10 @@ function failedNetwork(error?: string): NetworkStatus {
   }
 }
 
-const FRESH_MS = 60_000
+const SPEED_HOLD_MS = 2_500
 
-let pending: Promise<TrafficResponse> | null = null
-let cached: { at: number; body: TrafficResponse } | null = null
+let pending: Promise<{ body: TrafficResponse; complete: boolean }> | null = null
+let cached: { at: number; ttl: number; body: TrafficResponse } | null = null
 
 export async function GET(request: Request) {
   const simulate = new URL(request.url).searchParams.get("simulate")
@@ -88,13 +89,14 @@ export async function GET(request: Request) {
   }
 
   const now = Date.now()
-  if (cached && now - cached.at < FRESH_MS) return Response.json(cached.body)
+  if (cached && now - cached.at < cached.ttl) return Response.json(cached.body)
   pending ??= loadTraffic().finally(() => {
     pending = null
   })
   try {
-    const body = await pending
-    if (body.ok) cached = { at: Date.now(), body }
+    const reading = await pending
+    const body = reading.body
+    if (body.ok) cached = { at: Date.now(), ttl: speedReadingTtl(reading.complete), body }
     else if (cached) return Response.json(cached.body)
     return Response.json(body, { status: body.ok ? 200 : 502 })
   } catch (error) {
@@ -112,9 +114,7 @@ export async function GET(request: Request) {
   }
 }
 
-const SPEED_HOLD_MS = 2_500
-
-async function loadTraffic(): Promise<TrafficResponse> {
+async function loadTraffic(): Promise<{ body: TrafficResponse; complete: boolean }> {
   const [locations, raw, segments, network, centerlines, lampposts, lamppostSpeeds, saturation] =
     await Promise.all([
       settle(fetchText(LOCATIONS, 6 * 60 * 60 * 1000)),
@@ -157,7 +157,7 @@ async function loadTraffic(): Promise<TrafficResponse> {
       segments: segmentSummary,
       network: networkStatusFrom(network, false),
     }
-    return body
+    return { body, complete: false }
   }
 
   const detector =
@@ -185,7 +185,9 @@ async function loadTraffic(): Promise<TrafficResponse> {
     segments: segmentSummary,
     network: networkStatusFrom(network, Boolean(drawn)),
   }
-  return body
+  const complete =
+    lampposts.status === "fulfilled" && lamppostSpeeds.status === "fulfilled" && saturation.status === "fulfilled"
+  return { body, complete }
 }
 
 function drawnFromNetwork(

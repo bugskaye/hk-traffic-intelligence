@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-07-speed-reading-race",
+    date: "2026-10-07",
+    kind: "fixed",
+    en: "A speed reading that went out before the official class does not stay up for a full minute, and a refresh that starts while a reading is still arriving is kept.",
+    tc: "未帶到官方等級的車速讀數不會停一整分鐘。讀數還在途中時開始的下一次更新會保留。",
+    sc: "未带到官方等级的车速读数不会停一整分钟。读数还在途中时开始的下一次更新会保留。",
+  },
+  {
     id: "2026-10-07-speed-with-the-board",
     date: "2026-10-07",
     kind: "fixed",

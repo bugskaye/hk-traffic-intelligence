@@ -17,32 +17,40 @@ export function useLiveJson<T extends { ok: boolean }>(url: string | null, inter
     let abort: AbortController | null = null
 
     let running = false
+    let again = false
     const load = async () => {
-      if (running) return
+      if (running) {
+        again = true
+        return
+      }
       running = true
-      const request = ++generation
-      const controller = new AbortController()
-      abort = controller
-      const run = shareArrivalLane ? (task: () => Promise<void>) => arrivalLane(task) : (task: () => Promise<void>) => task()
       try {
-        await run(async () => {
-          if (cancelled || request !== generation) return
-          try {
-            const response = await fetch(url, { cache: "no-store", signal: controller.signal })
-            const body: unknown = await response.json()
+        do {
+          again = false
+          const request = ++generation
+          const controller = new AbortController()
+          abort?.abort()
+          abort = controller
+          const run = shareArrivalLane ? (task: () => Promise<void>) => arrivalLane(task) : (task: () => Promise<void>) => task()
+          await run(async () => {
             if (cancelled || request !== generation) return
-            if (!hasOk(body)) {
-              setError(`Unexpected response (${response.status})`)
-              return
+            try {
+              const response = await fetch(url, { cache: "no-store", signal: controller.signal })
+              const body: unknown = await response.json()
+              if (cancelled || request !== generation) return
+              if (!hasOk(body)) {
+                setError(`Unexpected response (${response.status})`)
+                return
+              }
+              const incoming = body as T
+              setData((current) => nextReading(current, incoming))
+              setError(incoming.ok ? null : readingError(incoming, response.status))
+            } catch (cause) {
+              if (cancelled || request !== generation || controller.signal.aborted) return
+              setError(cause instanceof Error ? cause.message : "Request failed")
             }
-            const incoming = body as T
-            setData((current) => nextReading(current, incoming))
-            setError(incoming.ok ? null : readingError(incoming, response.status))
-          } catch (cause) {
-            if (cancelled || request !== generation || controller.signal.aborted) return
-            setError(cause instanceof Error ? cause.message : "Request failed")
-          }
-        })
+          })
+        } while (again && !cancelled)
       } finally {
         running = false
       }
