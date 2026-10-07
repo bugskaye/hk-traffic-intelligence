@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-07-speed-with-the-board",
+    date: "2026-10-07",
+    kind: "fixed",
+    en: "Speed colours, the network speed, and the slow roads appear with the rest of the board.",
+    tc: "道路顏色、路網車速和緩慢路段與其他讀數一起出現。",
+    sc: "道路颜色、路网车速和缓慢路段与其他读数一起出现。",
+  },
+  {
     id: "2026-10-07-fold-marks",
     date: "2026-10-07",
     kind: "improved",

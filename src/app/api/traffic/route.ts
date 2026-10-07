@@ -112,17 +112,19 @@ export async function GET(request: Request) {
   }
 }
 
+const SPEED_HOLD_MS = 2_500
+
 async function loadTraffic(): Promise<TrafficResponse> {
   const [locations, raw, segments, network, centerlines, lampposts, lamppostSpeeds, saturation] =
-    await Promise.allSettled([
-      fetchText(LOCATIONS, 6 * 60 * 60 * 1000),
-      fetchText(RAW_SPEEDS, 45_000),
-      fetchText(SEGMENT_SPEEDS, 45_000),
-      fetchText(NETWORK_DATE, 6 * 60 * 60 * 1000),
-      loadCenterlines(),
-      fetchText(LAMPPOSTS, 6 * 60 * 60 * 1000),
-      fetchText(LAMPPOST_SPEEDS, 45_000),
-      loadSaturation(),
+    await Promise.all([
+      settle(fetchText(LOCATIONS, 6 * 60 * 60 * 1000)),
+      settle(fetchText(RAW_SPEEDS, 45_000)),
+      settle(fetchText(SEGMENT_SPEEDS, 45_000)),
+      settle(fetchText(NETWORK_DATE, 6 * 60 * 60 * 1000)),
+      settle(loadCenterlines()),
+      held(fetchText(LAMPPOSTS, 6 * 60 * 60 * 1000), SPEED_HOLD_MS),
+      held(fetchText(LAMPPOST_SPEEDS, 45_000), SPEED_HOLD_MS),
+      held(loadSaturation(), SPEED_HOLD_MS),
     ])
 
   const segmentParsed = segments.status === "fulfilled" ? parseSegments(segments.value) : null
@@ -205,10 +207,35 @@ function drawnFromNetwork(
 
 let saturationCache: { expires: number; levels: Map<string, string> } | null = null
 
+function settle<T>(promise: Promise<T>): Promise<PromiseSettledResult<T>> {
+  return promise.then(
+    (value) => ({ status: "fulfilled", value }),
+    (reason) => ({ status: "rejected", reason }),
+  )
+}
+
+function held<T>(promise: Promise<T>, ms: number): Promise<PromiseSettledResult<T>> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      resolve({ status: "rejected", reason: new Error("continued without this file") })
+    }, ms)
+    promise.then(
+      (value) => {
+        clearTimeout(timer)
+        resolve({ status: "fulfilled", value })
+      },
+      (reason) => {
+        clearTimeout(timer)
+        resolve({ status: "rejected", reason })
+      },
+    )
+  })
+}
+
 async function loadSaturation(): Promise<Map<string, string>> {
   if (saturationCache && saturationCache.expires > Date.now()) return saturationCache.levels
   const response = await fetchUpstream(SATURATION_URL, 60_000, {
-    timeoutMs: 40_000,
+    timeoutMs: 8_000,
     headers: {
       Accept: "application/json",
       Referer: "https://www.hkemobility.gov.hk/en/",
