@@ -175,6 +175,11 @@ export function beginOnly(layers: WatchLayers): WatchLayers {
   return next
 }
 
+export function layerNamesOpen(narrow: boolean, choice: boolean | null): boolean {
+  if (choice !== null) return choice
+  return !narrow
+}
+
 export function chooseWatchedLayer(only: boolean, layers: WatchLayers, id: WatchLayer): { only: boolean; layers: WatchLayers } {
   if (!only) return { only: false, layers: { ...layers, [id]: !layers[id] } }
   const current = soleLayer(layers)

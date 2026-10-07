@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-07-layer-collapse",
+    date: "2026-10-07",
+    kind: "added",
+    en: "The layer names can be hidden. A phone starts with them hidden so the map stays clear.",
+    tc: "圖層名稱可以收起。手機一打開就先收起，地圖不會被擋住。",
+    sc: "图层名称可以收起。手机一打开就先收起，地图不会被挡住。",
+  },
+  {
     id: "2026-10-07-only-second-layer",
     date: "2026-10-07",
     kind: "fixed",

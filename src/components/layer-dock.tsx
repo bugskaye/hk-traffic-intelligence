@@ -1,9 +1,9 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useSyncExternalStore } from "react"
 import { useI18n } from "@/components/locale"
 import type { Messages } from "@/lib/i18n"
-import { allLayers, allLayersOn, beginOnly, chooseWatchedLayer } from "@/lib/preferences"
+import { allLayers, allLayersOn, beginOnly, chooseWatchedLayer, layerNamesOpen } from "@/lib/preferences"
 import type { Basemap, WatchLayer, WatchLayers } from "@/lib/types"
 
 type LayerDockProps = {
@@ -99,6 +99,18 @@ function basemapLabel(id: Basemap, m: Messages): string {
   }
 }
 
+const NARROW_DOCK = "(max-width: 760px)"
+
+function subscribeNarrow(onChange: () => void) {
+  const query = window.matchMedia(NARROW_DOCK)
+  query.addEventListener("change", onChange)
+  return () => query.removeEventListener("change", onChange)
+}
+
+function dockIsNarrow(): boolean {
+  return window.matchMedia(NARROW_DOCK).matches
+}
+
 const BASEMAPS: Basemap[] = ["satellite", "street", "buildings"]
 const COUNTED_LAYERS: ReadonlySet<WatchLayer> = new Set(["works", "incidents"])
 const LAYERS: { id: WatchLayer; swatch: string }[] = [
@@ -126,6 +138,9 @@ const LAYERS: { id: WatchLayer; swatch: string }[] = [
 export function LayerDock(props: LayerDockProps) {
   const { messages: m } = useI18n()
   const [only, setOnly] = useState(false)
+  const [namesChoice, setNamesChoice] = useState<boolean | null>(null)
+  const narrow = useSyncExternalStore(subscribeNarrow, dockIsNarrow, () => false)
+  const namesOpen = layerNamesOpen(narrow, namesChoice)
   const mix = useRef<WatchLayers | null>(null)
   if (!props.mapLive) return null
 
@@ -159,13 +174,25 @@ export function LayerDock(props: LayerDockProps) {
     <div
       data-map-chrome="bottom"
       data-layer-dock=""
-      className={`pointer-events-auto absolute left-4 z-10 flex max-w-[calc(100%-2rem)] flex-col gap-2 lg:left-16 ${
+      data-layers-open={namesChoice === null ? undefined : namesChoice ? "true" : "false"}
+      className={`layer-dock pointer-events-auto absolute left-4 z-10 flex max-w-[calc(100%-2rem)] flex-col gap-2 lg:left-16 ${
         props.aboveMarquee
           ? "bottom-[var(--dock-closed-bottom,9rem)] sm:bottom-28"
           : "bottom-[var(--map-dock-bottom,7rem)] sm:bottom-14 sm:max-w-[calc(100%-24rem)] lg:max-w-[calc(100%-30rem)]"
       }`}
     >
       <div className="layer-scroll flex max-w-full items-center gap-2 overflow-x-auto sm:flex-wrap sm:overflow-visible">
+      <button
+        type="button"
+        aria-expanded={namesOpen}
+        aria-controls="layer-name-list"
+        onClick={() => setNamesChoice(!namesOpen)}
+        className={`shrink-0 border px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] uppercase ${
+          namesOpen ? "border-white/15 bg-[#041018]/70 text-cyan-50" : "border-cyan-200/50 bg-[#041018]/80 text-white"
+        }`}
+      >
+        {namesOpen ? m.layerHide : m.layerNames}
+      </button>
       <div className="inline-flex shrink-0 border border-white/15" role="group" aria-label={m.basemap}>
         {BASEMAPS.map((id) => {
           const on = props.basemap === id
@@ -204,6 +231,7 @@ export function LayerDock(props: LayerDockProps) {
       >
         {m.layerAll}
       </button>
+      <div id="layer-name-list" className="layer-names" hidden={!namesOpen}>
       {LAYERS.map((layer) => {
         const on = props.layers[layer.id]
         const count = COUNTED_LAYERS.has(layer.id) ? props.counts[layer.id] : null
@@ -225,6 +253,7 @@ export function LayerDock(props: LayerDockProps) {
           </button>
         )
       })}
+      </div>
       <button
         type="button"
         onClick={props.onReplay}
@@ -235,7 +264,8 @@ export function LayerDock(props: LayerDockProps) {
       </div>
       {props.layers.speed ? (
         <p
-          className="basis-full flex flex-wrap items-center gap-x-3 gap-y-1 font-[family-name:var(--font-hud)] text-[0.68rem] tracking-[0.06em] text-cyan-50/90 uppercase"
+          className="layer-extra basis-full flex flex-wrap items-center gap-x-3 gap-y-1 font-[family-name:var(--font-hud)] text-[0.68rem] tracking-[0.06em] text-cyan-50/90 uppercase"
+          hidden={!namesOpen}
           aria-label={m.speedKey}
         >
           {SPEED_KEY.map((band) => (

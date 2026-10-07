@@ -218,6 +218,22 @@
   display: none;
 }
 
+.layer-names {
+  display: contents;
+}
+
+.layer-dock[data-layers-open="false"] .layer-names,
+.layer-dock[data-layers-open="false"] .layer-extra {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .layer-dock:not([data-layers-open="true"]) .layer-names,
+  .layer-dock:not([data-layers-open="true"]) .layer-extra {
+    display: none;
+  }
+}
+
 .layer-scroll {
   scrollbar-width: none;
   padding-bottom: 0.7rem;

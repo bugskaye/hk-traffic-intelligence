@@ -146,6 +146,8 @@ export type Messages = {
   locate: string
   layerOnly: string
   layerAll: string
+  layerNames: string
+  layerHide: string
   basemap: string
   speedKey: string
   pictureFailed: string
@@ -369,6 +371,8 @@ const en: Messages = {
   locate: "My location",
   layerOnly: "Only",
   layerAll: "All",
+  layerNames: "Layers",
+  layerHide: "Hide",
   basemap: "Basemap",
   speedKey: "Official traffic class. Good, average, and bad are the Transport Department saturation levels.",
   pictureFailed: "The camera and works picture did not load.",
@@ -592,6 +596,8 @@ const zhHK: Messages = {
   locate: "我的位置",
   layerOnly: "只看",
   layerAll: "全部",
+  layerNames: "圖層",
+  layerHide: "收起",
   basemap: "底圖",
   speedKey: "運輸署交通狀況等級：暢順、緩慢、擠塞。",
   pictureFailed: "未能載入快拍及工程畫面。",
@@ -811,6 +817,8 @@ const zhCN: Messages = {
   locate: "我的位置",
   layerOnly: "只看",
   layerAll: "全部",
+  layerNames: "图层",
+  layerHide: "收起",
   basemap: "底图",
   speedKey: "运输署交通状况等级：畅顺、缓慢、挤塞。",
   pictureFailed: "未能载入快拍及工程画面。",
