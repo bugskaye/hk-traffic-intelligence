@@ -192,7 +192,7 @@ export function LayerDock(props: LayerDockProps) {
         }`}
       >
         {namesOpen ? m.layerHide : m.layerNames}
-        <span aria-hidden="true" className={namesOpen ? "layer-mark layer-mark-up" : "layer-mark layer-mark-down"} />
+        <span aria-hidden="true" className={namesOpen ? "layer-mark layer-mark-down" : "layer-mark layer-mark-up"} />
       </button>
       <div className="inline-flex shrink-0 border border-white/15" role="group" aria-label={m.basemap}>
         {BASEMAPS.map((id) => {
