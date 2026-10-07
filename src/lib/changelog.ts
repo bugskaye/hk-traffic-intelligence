@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-07-layer-bar-fold",
+    date: "2026-10-07",
+    kind: "improved",
+    en: "Only, All, and Replay fold away with the layer names. The Layers chip has a mark, so it is clear it opens.",
+    tc: "只看、全部和重播會跟圖層名稱一起收起。圖層有記號，看得出可以打開。",
+    sc: "只看、全部和重播会跟图层名称一起收起。图层有记号，看得出可以打开。",
+  },
+  {
     id: "2026-10-07-phone-intel",
     date: "2026-10-07",
     kind: "improved",

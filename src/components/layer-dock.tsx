@@ -187,11 +187,12 @@ export function LayerDock(props: LayerDockProps) {
         aria-expanded={namesOpen}
         aria-controls="layer-name-list"
         onClick={() => setNamesChoice(!namesOpen)}
-        className={`shrink-0 border px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] uppercase ${
+        className={`inline-flex shrink-0 items-center gap-1.5 border px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] uppercase ${
           namesOpen ? "border-white/15 bg-[#041018]/70 text-cyan-50" : "border-cyan-200/50 bg-[#041018]/80 text-white"
         }`}
       >
         {namesOpen ? m.layerHide : m.layerNames}
+        <span aria-hidden="true" className={namesOpen ? "layer-mark layer-mark-up" : "layer-mark layer-mark-down"} />
       </button>
       <div className="inline-flex shrink-0 border border-white/15" role="group" aria-label={m.basemap}>
         {BASEMAPS.map((id) => {
@@ -215,7 +216,8 @@ export function LayerDock(props: LayerDockProps) {
         type="button"
         aria-pressed={only}
         onClick={switchOnly}
-        className={`shrink-0 border px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] uppercase ${
+        hidden={!namesOpen}
+        className={`layer-actions shrink-0 border px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] uppercase ${
           only ? "border-cyan-200/50 bg-[#041018]/80 text-white" : "border-white/15 bg-[#041018]/70 text-cyan-50"
         }`}
       >
@@ -225,7 +227,8 @@ export function LayerDock(props: LayerDockProps) {
         type="button"
         aria-pressed={!only && allLayersOn(props.layers)}
         onClick={showAll}
-        className={`shrink-0 border px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] uppercase ${
+        hidden={!namesOpen}
+        className={`layer-actions shrink-0 border px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] uppercase ${
           !only && allLayersOn(props.layers) ? "border-cyan-200/50 bg-[#041018]/80 text-white" : "border-white/15 bg-[#041018]/70 text-cyan-50"
         }`}
       >
@@ -257,7 +260,8 @@ export function LayerDock(props: LayerDockProps) {
       <button
         type="button"
         onClick={props.onReplay}
-        className="shrink-0 border border-white/15 bg-[#041018]/70 px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] text-cyan-50 uppercase"
+        hidden={!namesOpen}
+        className="layer-actions shrink-0 border border-white/15 bg-[#041018]/70 px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] text-cyan-50 uppercase"
       >
         {m.replay}
       </button>
