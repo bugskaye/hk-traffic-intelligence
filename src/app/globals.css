@@ -292,6 +292,7 @@
 
 .fold-open .fold-clip {
   visibility: visible;
+  overflow: visible;
   transition: visibility 0s linear 0s;
 }
 

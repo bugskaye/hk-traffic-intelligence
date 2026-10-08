@@ -179,7 +179,7 @@ export function LayerDock(props: LayerDockProps) {
       className={`layer-dock pointer-events-auto absolute left-4 z-10 flex max-w-[calc(100%-2rem)] flex-col gap-2 lg:left-16 ${
         props.aboveMarquee
           ? "bottom-[var(--dock-closed-bottom,9rem)] sm:bottom-28"
-          : "bottom-[var(--map-dock-bottom,7rem)] sm:bottom-14 sm:max-w-[calc(100%-24rem)] lg:max-w-[calc(100%-30rem)]"
+          : "bottom-[var(--map-dock-bottom,7rem)] sm:right-[24rem] sm:bottom-14 sm:max-w-none lg:right-[25rem]"
       }`}
     >
       <div className="layer-scroll flex max-w-full items-center gap-2 overflow-x-auto sm:flex-wrap sm:overflow-visible">
@@ -213,8 +213,8 @@ export function LayerDock(props: LayerDockProps) {
           )
         })}
       </div>
-      <Fold open={namesOpen} across>
-      <div className="flex items-center gap-2">
+      <Fold open={namesOpen} className="w-full min-w-0">
+      <div className="flex w-full flex-wrap items-center gap-2">
       <button
         type="button"
         aria-pressed={only}

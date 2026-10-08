@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-08-layers-beside-card",
+    date: "2026-10-08",
+    kind: "fixed",
+    en: "The layer list stays beside the intel card on a wide screen, and every layer name remains visible.",
+    tc: "寬螢幕上，圖層名單留在情報卡旁邊，每個圖層名稱都看得到。",
+    sc: "宽屏幕上，图层名单留在情报卡旁边，每个图层名称都看得到。",
+  },
+  {
     id: "2026-10-07-fold-motion",
     date: "2026-10-07",
     kind: "improved",
