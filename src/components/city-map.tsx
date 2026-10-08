@@ -49,6 +49,7 @@ import { meterColorStops, meterInk, meterPin, meterPlateCount, type MeterPole } 
 import { chargersInsideParks, type ChargerPlace } from "@/lib/ev-chargers"
 import { soleLayer } from "@/lib/preferences"
 import { displayText, MESSAGES, type Locale, type Messages } from "@/lib/i18n"
+import { MAP_CREDIT } from "@/lib/map-credits"
 import { lineRecord, mtrStationCollection, mtrTrackCollection, stationPoint, stationRecord } from "@/lib/mtr-network"
 import { lrtColor, lrtPoint, lrtRoutesThrough, lrtStation, lrtStationCollection, lrtTrackCollection } from "@/lib/lrt-network"
 import { ferryPierFeatures } from "@/lib/ferry-network"
@@ -116,7 +117,7 @@ function satelliteStyle(): StyleSpecification {
         // Hong Kong imagery is real through zoom 19. Zoom 20 and above is Esri's
         // gray "Map Data Not Yet Available" tile, so the map scales the zoom 19 picture.
         maxzoom: 19,
-        attribution: "© Esri",
+        attribution: MAP_CREDIT.esri,
       },
       labels: {
         type: "raster",
@@ -1309,43 +1310,43 @@ function mountDataLayers(map: Map) {
   map.addSource("control-points", {
     type: "geojson",
     data: emptyCollection(),
-    attribution: "© Immigration Department",
+    attribution: MAP_CREDIT.immigration,
   })
   map.addSource("mtr-track", {
     type: "geojson",
     data: mtrTrackCollection(),
-    attribution: "© MTR Corporation | © Lands Department | © OpenStreetMap contributors",
+    attribution: MAP_CREDIT.osm,
   })
-  map.addSource("mtr-stations", { type: "geojson", data: mtrStationCollection() })
-  map.addSource("mtr-trains", { type: "geojson", data: emptyCollection() })
+  map.addSource("mtr-stations", { type: "geojson", data: mtrStationCollection(), attribution: MAP_CREDIT.lands })
+  map.addSource("mtr-trains", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.mtr })
   map.addSource("kmb-stops", { type: "geojson", data: emptyCollection() })
   map.addSource("lrt-track", {
     type: "geojson",
     data: lrtTrackCollection(),
-    attribution: "© MTR Corporation | © OpenStreetMap contributors",
+    attribution: MAP_CREDIT.osm,
   })
-  map.addSource("lrt-stations", { type: "geojson", data: lrtStationCollection() })
+  map.addSource("lrt-stations", { type: "geojson", data: lrtStationCollection(), attribution: MAP_CREDIT.mtr })
   map.addSource("lrt-trains", { type: "geojson", data: emptyCollection() })
   map.addSource("citybus-stops", { type: "geojson", data: emptyCollection() })
   map.addSource("gmb-stops", { type: "geojson", data: emptyCollection() })
   map.addSource("nlb-stops", { type: "geojson", data: emptyCollection() })
-  map.addSource("mtrbus-stops", { type: "geojson", data: emptyCollection(), attribution: "© MTR Corporation" })
-  map.addSource("ferry-piers", { type: "geojson", data: emptyCollection() })
+  map.addSource("mtrbus-stops", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.mtr })
+  map.addSource("ferry-piers", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.ferries })
   map.addSource("ferry-vessels", { type: "geojson", data: emptyCollection() })
-  map.addSource("parking", { type: "geojson", data: emptyCollection(), attribution: "© Transport Department" })
-  map.addSource("motorcycle", { type: "geojson", data: emptyCollection(), attribution: "© Transport Department" })
-  map.addSource("kerb", { type: "geojson", data: emptyCollection(), attribution: "© Transport Department" })
-  map.addSource("meters", { type: "geojson", data: emptyCollection(), attribution: "© Transport Department" })
+  map.addSource("parking", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.transport })
+  map.addSource("motorcycle", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.transport })
+  map.addSource("kerb", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.transport })
+  map.addSource("meters", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.transport })
   map.addSource("chargers", {
     type: "geojson",
     data: emptyCollection(),
-    attribution: "© Environmental Protection Department | © Lands Department",
+    attribution: MAP_CREDIT.environment,
   })
   map.addSource("approaches", { type: "geojson", data: emptyCollection() })
   map.addSource("corridors", {
     type: "geojson",
     data: emptyCollection(),
-    attribution: "© Transport Department",
+    attribution: MAP_CREDIT.transport,
   })
   map.addSource("particles", { type: "geojson", data: emptyCollection() })
   const before = overlaySlot(map)

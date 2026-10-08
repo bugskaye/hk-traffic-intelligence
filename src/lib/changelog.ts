@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-08-map-credits",
+    date: "2026-10-08",
+    kind: "fixed",
+    en: "Each credit on the map is named once. OpenStreetMap no longer repeats, and Sun Ferry, Hong Kong and Kowloon Ferry, the Star Ferry, and Fortune Ferry are named.",
+    tc: "地圖上每個來源只署名一次。OpenStreetMap 不再重複，新渡輪、港九小輪、天星小輪和富裕小輪都有署名。",
+    sc: "地图上每个来源只署名一次。OpenStreetMap 不再重复，新渡轮、港九小轮、天星小轮和富裕小轮都有署名。",
+  },
+  {
     id: "2026-10-08-layers-beside-card",
     date: "2026-10-08",
     kind: "fixed",
