@@ -5,6 +5,7 @@ export default defineConfig({
     name: "hktraffic",
     entrypoint: "vinext/server/fetch-handler",
     compatibilityDate: "2026-09-29",
+    placement: { mode: "smart" },
     compatibilityFlags: ["nodejs_compat"],
     assets: { notFoundHandling: "none" },
     env: {
