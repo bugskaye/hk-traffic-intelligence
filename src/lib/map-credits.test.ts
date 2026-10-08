@@ -14,15 +14,26 @@ const satellite = [
   MAP_CREDIT.mtr,
   MAP_CREDIT.lands,
   MAP_CREDIT.osm,
+  MAP_CREDIT.kmb,
+  MAP_CREDIT.citybus,
+  MAP_CREDIT.nlb,
   MAP_CREDIT.ferries,
 ]
 
 const line = shownCredits(satellite).join(" | ")
 assert.equal(line.split("OpenStreetMap").length - 1, 1)
-assert.equal(line.split("MTR Corporation").length - 1, 1)
+assert.equal(line.split("MTR").length - 1, 1)
+assert.equal(line.includes("MTR Corporation"), false)
 assert.equal(line.split("Lands Department").length - 1, 1)
+assert.equal(line.split("KMB").length - 1, 1)
+assert.equal(line.includes("© LWB"), true)
+assert.equal(line.includes("Long Win"), false)
+assert.equal(line.includes("© Citybus"), true)
+assert.equal(line.includes("© NLB"), true)
+assert.equal(line.includes("New Lantao Bus"), false)
 assert.equal(line.includes("© Sun Ferry"), true)
-assert.equal(line.includes("© Hong Kong and Kowloon Ferry"), true)
+assert.equal(line.includes("© HKKF"), true)
+assert.equal(line.includes("Hong Kong and Kowloon Ferry"), false)
 assert.equal(line.includes("© Star Ferry"), true)
 assert.equal(line.includes("© Fortune Ferry"), true)
 

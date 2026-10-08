@@ -5,11 +5,14 @@ export const MAP_CREDIT = {
   esri: "© Esri",
   transport: "© Transport Department",
   immigration: "© Immigration Department",
-  mtr: "© MTR Corporation",
+  mtr: "© MTR",
   lands: "© Lands Department",
   environment: "© Environmental Protection Department",
   osm: '<a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-  ferries: "© Sun Ferry | © Hong Kong and Kowloon Ferry | © Star Ferry | © Fortune Ferry",
+  kmb: "© KMB | © LWB",
+  citybus: "© Citybus",
+  nlb: "© NLB",
+  ferries: "© Sun Ferry | © HKKF | © Star Ferry | © Fortune Ferry",
 } as const
 
 export function shownCredits(attributions: readonly string[]): string[] {

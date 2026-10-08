@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-08-bus-credits",
+    date: "2026-10-08",
+    kind: "fixed",
+    en: "KMB, LWB, Citybus, NLB, HKKF, and MTR use their short names.",
+    tc: "署名用簡稱：KMB、LWB、Citybus、NLB、HKKF 和 MTR。",
+    sc: "署名用简称：KMB、LWB、Citybus、NLB、HKKF 和 MTR。",
+  },
+  {
     id: "2026-10-08-map-credits",
     date: "2026-10-08",
     kind: "fixed",

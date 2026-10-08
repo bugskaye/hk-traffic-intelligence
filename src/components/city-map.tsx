@@ -1282,6 +1282,16 @@ function addOverlay(map: Map, layer: Parameters<Map["addLayer"]>[0], before: str
   else map.addLayer(layer)
 }
 
+function addCreditHold(map: Map, id: string, source: string, before: string | undefined) {
+  addOverlay(map, {
+    id,
+    type: "circle",
+    source,
+    filter: ["==", ["literal", 1], 0],
+    paint: { "circle-radius": 0 },
+  }, before)
+}
+
 function addStopLabel(map: Map, id: string, source: string, before: string | undefined, minzoom = LABEL_MIN_ZOOM, allowOverlap = true, sortKey?: string) {
   addOverlay(map, {
     id,
@@ -1319,7 +1329,7 @@ function mountDataLayers(map: Map) {
   })
   map.addSource("mtr-stations", { type: "geojson", data: mtrStationCollection(), attribution: MAP_CREDIT.lands })
   map.addSource("mtr-trains", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.mtr })
-  map.addSource("kmb-stops", { type: "geojson", data: emptyCollection() })
+  map.addSource("kmb-stops", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.kmb })
   map.addSource("lrt-track", {
     type: "geojson",
     data: lrtTrackCollection(),
@@ -1327,9 +1337,9 @@ function mountDataLayers(map: Map) {
   })
   map.addSource("lrt-stations", { type: "geojson", data: lrtStationCollection(), attribution: MAP_CREDIT.mtr })
   map.addSource("lrt-trains", { type: "geojson", data: emptyCollection() })
-  map.addSource("citybus-stops", { type: "geojson", data: emptyCollection() })
+  map.addSource("citybus-stops", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.citybus })
   map.addSource("gmb-stops", { type: "geojson", data: emptyCollection() })
-  map.addSource("nlb-stops", { type: "geojson", data: emptyCollection() })
+  map.addSource("nlb-stops", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.nlb })
   map.addSource("mtrbus-stops", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.mtr })
   map.addSource("ferry-piers", { type: "geojson", data: emptyCollection(), attribution: MAP_CREDIT.ferries })
   map.addSource("ferry-vessels", { type: "geojson", data: emptyCollection() })
@@ -1667,6 +1677,7 @@ function addWatchLayers(map: Map, before: string | undefined) {
     },
   }, before)
   addStopLabel(map, "kmb-stop-label", "kmb-stops", before, LABEL_MIN_ZOOM, false)
+  addCreditHold(map, "kmb-credit", "kmb-stops", before)
   addOverlay(map, {
     id: "parking",
     type: "circle",
@@ -1799,6 +1810,7 @@ function addWatchLayers(map: Map, before: string | undefined) {
     },
   }, before)
   addStopLabel(map, "citybus-stop-label", "citybus-stops", before, LABEL_MIN_ZOOM, false)
+  addCreditHold(map, "citybus-credit", "citybus-stops", before)
   addOverlay(map, {
     id: "gmb-stops",
     type: "circle",
@@ -1827,6 +1839,7 @@ function addWatchLayers(map: Map, before: string | undefined) {
     },
   }, before)
   addStopLabel(map, "nlb-stop-label", "nlb-stops", before, LABEL_MIN_ZOOM, false)
+  addCreditHold(map, "nlb-credit", "nlb-stops", before)
   addOverlay(map, {
     id: "mtrbus-stops",
     type: "circle",
@@ -2285,15 +2298,15 @@ function layerIds(kind: WatchLayer): string[] {
     case "mtr":
       return ["mtr-track-casing", "mtr-track", "mtr-stations", "mtr-station-label", "mtr-trains", "mtr-train-label"]
     case "kmb":
-      return ["kmb-stops", "kmb-stop-label"]
+      return ["kmb-stops", "kmb-stop-label", "kmb-credit"]
     case "lrt":
       return ["lrt-track-casing", "lrt-track", "lrt-stations", "lrt-station-label", "lrt-trains", "lrt-train-label"]
     case "citybus":
-      return ["citybus-stops", "citybus-stop-label"]
+      return ["citybus-stops", "citybus-stop-label", "citybus-credit"]
     case "gmb":
       return ["gmb-stops", "gmb-stop-label"]
     case "nlb":
-      return ["nlb-stops", "nlb-stop-label"]
+      return ["nlb-stops", "nlb-stop-label", "nlb-credit"]
     case "mtrbus":
       return ["mtrbus-stops", "mtrbus-stop-label"]
     case "ferry":
