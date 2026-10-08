@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    id: "2026-10-08-intel-layer",
+    date: "2026-10-08",
+    kind: "improved",
+    en: "Clicking an intel item turns on its layer. If Only is showing a different layer, Only turns off and that layer turns on beside it.",
+    tc: "點情報項目會打開它所屬的圖層。若「只看」正顯示另一圖層，「只看」會放開，並一併打開該圖層。",
+    sc: "点情报项目会打开它所属的图层。若「只看」正显示另一图层，「只看」会放开，并一并打开该图层。",
+  },
+  {
     id: "2026-10-08-bus-credits",
     date: "2026-10-08",
     kind: "fixed",

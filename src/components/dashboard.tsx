@@ -18,6 +18,7 @@ import { inLantau } from "@/lib/lantau"
 import { PICTURE_POLL_MS } from "@/lib/picture"
 import { boardFaultSnapshot, subscribeBoardFaults } from "@/lib/board-status"
 import { catalogueBoards } from "@/lib/place-arrivals"
+import { layersForIntel } from "@/lib/intel-focus"
 import { INTEL_PHONE_QUERY, intelCardOpen, preferenceServerSnapshot, preferenceSnapshot, soleLayer, subscribePreferences, updatePreference } from "@/lib/preferences"
 import { hkoLang } from "@/lib/i18n"
 import type {
@@ -34,6 +35,7 @@ import type {
   PictureResponse,
   TrafficResponse,
   WarningsResponse,
+  WatchLayer,
   WatchLayers,
   Basemap,
 } from "@/lib/types"
@@ -138,6 +140,7 @@ export function Dashboard() {
   const trafficError = trafficLive.error ?? (traffic && !traffic.ok ? traffic.error ?? "Speed feed failed" : null)
   const pictureError = pictureLive.error ?? picture?.error ?? (picture && !picture.ok ? "Picture failed" : null)
   const [focus, setFocus] = useState<{ id: string; coordinates: [number, number] } | null>(null)
+  const [only, setOnly] = useState(false)
   const intelChoice = prefs.intelOpen
   const intelOpen = intelCardOpen(phone, intelChoice)
   const boardFaults = useSyncExternalStore(subscribeBoardFaults, boardFaultSnapshot, boardFaultSnapshot)
@@ -147,6 +150,13 @@ export function Dashboard() {
 
   function setLayers(next: WatchLayers) {
     updatePreference({ layers: next })
+  }
+
+  function focusIntel(next: { id: string; coordinates: [number, number]; layer: WatchLayer | null }) {
+    setFocus({ id: next.id, coordinates: next.coordinates })
+    const opened = layersForIntel(next.layer, layers, only)
+    if (opened.only !== only) setOnly(opened.only)
+    if (opened.layers !== layers) setLayers(opened.layers)
   }
 
   function selectBasemap(next: Basemap) {
@@ -215,7 +225,7 @@ export function Dashboard() {
         open={intelOpen}
         choice={intelChoice}
         onOpenChange={(open) => updatePreference({ intelOpen: open, intelChosen: true })}
-        onFocus={setFocus}
+        onFocus={focusIntel}
         view={view}
       />
       <p
@@ -243,6 +253,8 @@ export function Dashboard() {
       </p>
       <LayerDock
         layers={layers}
+        only={only}
+        onOnly={setOnly}
         basemap={basemap}
         counts={{
           speed: null,

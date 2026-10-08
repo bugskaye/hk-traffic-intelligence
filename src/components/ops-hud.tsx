@@ -9,10 +9,11 @@ import { crossingsFrom, nearestApproach } from "@/lib/crossings"
 import { displayText, formatClock, LOCALE_MARK, LOCALES, type Messages } from "@/lib/i18n"
 import { CHANGELOG, changelogText } from "@/lib/changelog"
 import type { BoardFault } from "@/lib/board-status"
+import { layerForIntel } from "@/lib/intel-focus"
 import { firstOpenBoundary, INTEL_TABS, intelBoard, type IntelItem, type IntelTab } from "@/lib/intel"
 import { INTEL_PHONE_QUERY, preferenceServerSnapshot, preferenceSnapshot, subscribePreferences, updatePreference } from "@/lib/preferences"
 import { formatSpeed } from "@/lib/speed"
-import type { ApproachPoint, ApproachesResponse, HarbourJourney, TrafficResponse, WeatherConditions, WeatherWarning } from "@/lib/types"
+import type { ApproachPoint, ApproachesResponse, HarbourJourney, TrafficResponse, WatchLayer, WeatherConditions, WeatherWarning } from "@/lib/types"
 import { weatherBar } from "@/lib/warnings"
 
 type OpsHudProps = {
@@ -44,7 +45,7 @@ type OpsHudProps = {
   open: boolean
   choice: boolean | null
   onOpenChange: (open: boolean) => void
-  onFocus: (focus: { id: string; coordinates: [number, number] }) => void
+  onFocus: (focus: { id: string; coordinates: [number, number]; layer: WatchLayer | null }) => void
   view: { lng: number; lat: number; zoom: number } | null
 }
 
@@ -125,7 +126,7 @@ export function OpsHud(props: OpsHudProps) {
   const show = (next: IntelTab, item: IntelItem | undefined) => {
     setTab(next)
     changeOpen(true)
-    if (item?.coordinates) props.onFocus({ id: item.id, coordinates: item.coordinates })
+    if (item?.coordinates) props.onFocus({ id: item.id, coordinates: item.coordinates, layer: layerForIntel(item.kind) })
   }
   useEffect(() => {
     const root = document.documentElement
@@ -278,7 +279,7 @@ export function OpsHud(props: OpsHudProps) {
               onChoose={(id) => {
                 setPinnedOrigin(id)
                 const point = id ? approachPoints.find((item) => item.id === id) : nearest
-                if (point) props.onFocus({ id: `harbour-origin-${point.id}`, coordinates: point.coordinates })
+                if (point) props.onFocus({ id: `harbour-origin-${point.id}`, coordinates: point.coordinates, layer: null })
               }}
             />
           ) : null}
@@ -294,7 +295,7 @@ export function OpsHud(props: OpsHudProps) {
                   tone={TONE.none}
                   hint={m.harbourMissingHint}
                   onClick={() => {
-                    if (origin) props.onFocus({ id: `harbour-origin-${origin.id}`, coordinates: origin.coordinates })
+                    if (origin) props.onFocus({ id: `harbour-origin-${origin.id}`, coordinates: origin.coordinates, layer: null })
                   }}
                 />
               )
@@ -308,7 +309,7 @@ export function OpsHud(props: OpsHudProps) {
                 value={m.minutes(crossing.minutes)}
                 tone={TONE[crossing.colour]}
                 hint={`${m.approachHint(road)} ${compare}`}
-                onClick={() => props.onFocus({ id: `crossing-${crossing.code}`, coordinates: crossing.coordinates })}
+                onClick={() => props.onFocus({ id: `crossing-${crossing.code}`, coordinates: crossing.coordinates, layer: "tolls" })}
               />
             )
           }) : null}
@@ -722,7 +723,7 @@ function IntelMarquee(props: { items: IntelItem[]; empty: string; seconds: numbe
                 disabled={item.coordinates == null}
                 onClick={() => {
                   if (!item.coordinates) return
-                  props.onFocus({ id: item.id, coordinates: item.coordinates })
+                  props.onFocus({ id: item.id, coordinates: item.coordinates, layer: layerForIntel(item.kind) })
                 }}
                 className="mx-5 whitespace-nowrap font-[family-name:var(--font-hud)] text-[0.72rem] text-cyan-50 disabled:cursor-default"
               >
@@ -746,7 +747,7 @@ function IntelRow(props: { item: IntelItem; onFocus: OpsHudProps["onFocus"] }) {
       disabled={item.coordinates == null}
       onClick={() => {
         if (!item.coordinates) return
-        props.onFocus({ id: item.id, coordinates: item.coordinates })
+        props.onFocus({ id: item.id, coordinates: item.coordinates, layer: layerForIntel(item.kind) })
       }}
       className="flex w-full items-start gap-2 px-1 py-1 text-left enabled:hover:bg-white/5 disabled:cursor-default"
     >

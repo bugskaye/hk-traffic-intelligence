@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useSyncExternalStore } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { Fold, FoldMark } from "@/components/fold-mark"
 import { useI18n } from "@/components/locale"
 import type { Messages } from "@/lib/i18n"
@@ -11,6 +11,8 @@ type LayerDockProps = {
   layers: WatchLayers
   basemap: Basemap
   counts: Record<WatchLayer, number | null>
+  only: boolean
+  onOnly: (only: boolean) => void
   onSetLayers: (layers: WatchLayers) => void
   onBasemap: (basemap: Basemap) => void
   onReplay: () => void
@@ -138,38 +140,39 @@ const LAYERS: { id: WatchLayer; swatch: string }[] = [
 
 export function LayerDock(props: LayerDockProps) {
   const { messages: m } = useI18n()
-  const [only, setOnly] = useState(false)
   const [namesChoice, setNamesChoice] = useState<boolean | null>(null)
   const narrow = useSyncExternalStore(subscribeNarrow, dockIsNarrow, () => false)
   const namesOpen = layerNamesOpen(narrow, namesChoice)
   const mix = useRef<WatchLayers | null>(null)
+  useEffect(() => {
+    if (!props.only) mix.current = null
+  }, [props.only])
   if (!props.mapLive) return null
 
   function choose(id: WatchLayer) {
-    const next = chooseWatchedLayer(only, props.layers, id)
-    if (next.only !== only) {
-      if (!next.only) mix.current = null
-      setOnly(next.only)
-    }
+    const next = chooseWatchedLayer(props.only, props.layers, id)
+    if (!next.only) mix.current = null
+    props.onOnly(next.only)
     props.onSetLayers(next.layers)
   }
 
   function showAll() {
     mix.current = null
-    setOnly(false)
+    props.onOnly(false)
     props.onSetLayers(allLayers(props.layers))
   }
 
   function switchOnly() {
-    if (only) {
-      if (mix.current) props.onSetLayers(mix.current)
+    if (props.only) {
+      const restored = mix.current
       mix.current = null
-      setOnly(false)
+      props.onOnly(false)
+      if (restored) props.onSetLayers(restored)
       return
     }
     mix.current = props.layers
     props.onSetLayers(beginOnly(props.layers))
-    setOnly(true)
+    props.onOnly(true)
   }
   return (
     <div
@@ -217,20 +220,20 @@ export function LayerDock(props: LayerDockProps) {
       <div className="flex w-full flex-wrap items-center gap-2">
       <button
         type="button"
-        aria-pressed={only}
+        aria-pressed={props.only}
         onClick={switchOnly}
         className={`layer-actions shrink-0 border px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] uppercase ${
-          only ? "border-cyan-200/50 bg-[#041018]/80 text-white" : "border-white/15 bg-[#041018]/70 text-cyan-50"
+          props.only ? "border-cyan-200/50 bg-[#041018]/80 text-white" : "border-white/15 bg-[#041018]/70 text-cyan-50"
         }`}
       >
         {m.layerOnly}
       </button>
       <button
         type="button"
-        aria-pressed={!only && allLayersOn(props.layers)}
+        aria-pressed={!props.only && allLayersOn(props.layers)}
         onClick={showAll}
         className={`layer-actions shrink-0 border px-2.5 py-1.5 font-[family-name:var(--font-hud)] text-[0.72rem] tracking-[0.08em] uppercase ${
-          !only && allLayersOn(props.layers) ? "border-cyan-200/50 bg-[#041018]/80 text-white" : "border-white/15 bg-[#041018]/70 text-cyan-50"
+          !props.only && allLayersOn(props.layers) ? "border-cyan-200/50 bg-[#041018]/80 text-white" : "border-white/15 bg-[#041018]/70 text-cyan-50"
         }`}
       >
         {m.layerAll}
