@@ -1,6 +1,8 @@
 import { bindings, defineConfig, defineWorker } from "cf/config";
 
 export default defineConfig({
+  // 🟢 補上這行：強制指定 ViNext 建置工具將 Next.js 網頁檔案輸出到 .vercel/output 目錄
+  outputDir: ".vercel/output",
   worker: defineWorker({
     name: "hktraffic",
     entrypoint: "vinext/server/fetch-handler",
